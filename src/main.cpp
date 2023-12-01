@@ -52,68 +52,45 @@ void initDisplay() {
   display.display();
 }
 
+void renderColumn(int offset, const char *header1, const char *header2,
+                  int sensorValue) {
+  int16_t cx, cy, x1, y1;
+  uint16_t w, h;
+  char sensorValueStr[5] = {'\0'};
+
+  display.setTextSize(1);
+
+  display.getTextBounds(header1, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.print(header1);
+  cy += h + 2;
+
+  display.getTextBounds(header2, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.print(header2);
+  cy += h + 16;
+
+  display.setTextSize(2);
+  std::snprintf(sensorValueStr, 5, "%d", sensorValue);
+
+  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.print(sensorValueStr);
+}
+
 void renderCombinedDisplay(int oilTemp, int oilPressure) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   const char *oilHeader = "OIL";
   const char *tempHeader = "TEMP";
   const char *psiHeader = "PSI";
-  char readingStr[5] = {'\0'};
 
   display.clearDisplay();
   display.setCursor(0, 0);
 
   display.drawFastVLine(64, 0, 64, SH110X_WHITE);
-
-  // oil temp
-
-  cy = 0;
-
-  display.setTextSize(1);
-
-  display.getTextBounds(oilHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(0 + ((64 - w) / 2), cy);
-  display.print(oilHeader);
-  cy += h + 2;
-
-  display.getTextBounds(tempHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(0 + ((64 - w) / 2), cy);
-  display.print(tempHeader);
-  cy += h + 16;
-
-  display.setTextSize(2);
-  std::snprintf(readingStr, 5, "%d", oilTemp);
-
-  display.getTextBounds(readingStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(0 + ((64 - w) / 2), cy);
-  display.print(readingStr);
-
-  memset(readingStr, '\0', 5);
-
-  // oil pressure
-
-  cy = 0;
-
-  display.setTextSize(1);
-
-  display.getTextBounds(oilHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(64 + ((64 - w) / 2), 0);
-  display.print(oilHeader);
-  cy += h + 2;
-
-  display.getTextBounds(psiHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(64 + ((64 - w) / 2), h + 2);
-  display.print(psiHeader);
-  cy += h + 16;
-
-  display.setTextSize(2);
-  std::snprintf(readingStr, 5, "%d", oilPressure);
-
-  display.getTextBounds(readingStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(64 + ((64 - w) / 2), cy);
-  display.print(readingStr);
-
-  memset(readingStr, '\0', 5);
+  renderColumn(0, oilHeader, tempHeader, oilTemp);
+  renderColumn(64, oilHeader, psiHeader, oilPressure);
 
   display.display();
 }
