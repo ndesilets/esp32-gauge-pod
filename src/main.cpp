@@ -9,7 +9,7 @@
 #define A_BTN_PIN 4
 #define B_BTN_PIN 36
 #define C_BTN_PIN 39
-#define BUFFER_CAPACITY 9600 // ~15 minutes at ~33ms intervals - 115kB ram
+#define BUFFER_CAPACITY 900 // holds ~15 mins of data at 1rps
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
 enum DisplayPower { OFF, ON };
@@ -50,20 +50,22 @@ void CircularBuffer::add(int32_t value) {
 
 int32_t CircularBuffer::getCurrent() { return buffer[index - 1 % capacity]; }
 
-CircularBuffer oilTemp = CircularBuffer();
-CircularBuffer oilPressure = CircularBuffer();
+CircularBuffer oilTempHistory = CircularBuffer();
+CircularBuffer oilPressureHistory = CircularBuffer();
+unsigned long lastSensorRead = 0;
+unsigned long now = 0;
 
 // --- sensor data functions
 
 double getOilPressure() {
   static double x = 0;
-  x += 0.1;
+  x += 0.01;
   return (sin(x) * 50) + 50;
 }
 
 double getOilTemp() {
   static double x = 0;
-  x += 0.1;
+  x += 0.01;
   return sin(x) * 160 + 140;
 }
 
@@ -161,8 +163,15 @@ void setup() {
 }
 
 void loop() {
-  oilTemp.add(getOilTemp());
-  oilPressure.add(getOilPressure());
+  int oilTemp = getOilTemp();
+  int oilPressure = getOilPressure();
+
+  now = millis();
+  if (now - lastSensorRead > 1000) {
+    lastSensorRead = now;
+    oilTempHistory.add(oilTemp);
+    oilPressureHistory.add(oilPressure);
+  }
 
   if (digitalRead(A_BTN_PIN) == HIGH) {
     Serial.println("A");
@@ -181,7 +190,7 @@ void loop() {
   } else {
     switch (displayMode) {
     case COMBINED:
-      renderCombinedDisplay(oilTemp.getCurrent(), oilPressure.getCurrent());
+      renderCombinedDisplay(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
       renderOilTempDisplay();
@@ -193,6 +202,6 @@ void loop() {
   }
 
   display.display();
-  delay(1000);
+  delay(33);
   yield();
 }
