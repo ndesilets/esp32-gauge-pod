@@ -19,17 +19,17 @@ void SensorHistory::add(int value) {
   }
 
   sum_1m += value;
-  if (size > 60) {
+  if (size >= 60) {
     sum_1m -= buffer[(index - 60) % capacity];
   }
 
   sum_5m += value;
-  if (size > 300) {
+  if (size >= 300) {
     sum_5m -= buffer[(index - 300) % capacity];
   }
 
   sum_15m += value;
-  if (size > 900) {
+  if (size >= 900) {
     sum_15m -= buffer[(index - 900) % capacity];
   }
 }
