@@ -9,7 +9,7 @@
 #define A_BTN_PIN 4
 #define B_BTN_PIN 36
 #define C_BTN_PIN 39
-#define BUFFER_CAPACITY 28800 // ~15 minutes at ~33ms intervals - 115kB ram
+#define BUFFER_CAPACITY 9600 // ~15 minutes at ~33ms intervals - 115kB ram
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
 enum DisplayPower { OFF, ON };
@@ -18,18 +18,53 @@ Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
 DisplayMode displayMode = COMBINED;
 DisplayPower displayPower = ON;
 
+// --- sensor buffers
+
+class CircularBuffer {
+public:
+  CircularBuffer();
+  void add(int value);
+  int getCurrent();
+
+private:
+  int32_t buffer[BUFFER_CAPACITY];
+  uint index;
+  uint capacity;
+  uint size;
+};
+
+CircularBuffer::CircularBuffer() {
+  index = 0;
+  capacity = BUFFER_CAPACITY;
+  size = 0;
+}
+
+void CircularBuffer::add(int32_t value) {
+  buffer[index % capacity] = value;
+  index++;
+
+  if (size < capacity) {
+    size++;
+  }
+}
+
+int32_t CircularBuffer::getCurrent() { return buffer[index - 1 % capacity]; }
+
+CircularBuffer oilTemp = CircularBuffer();
+CircularBuffer oilPressure = CircularBuffer();
+
 // --- sensor data functions
 
 double getOilPressure() {
-  static uint8_t x = 0;
-  x += 1;
-  return sin(x) * 90 + 122;
+  static double x = 0;
+  x += 0.1;
+  return (sin(x) * 50) + 50;
 }
 
 double getOilTemp() {
-  static uint8_t x = 0;
-  x += 1;
-  return sin(x) * 50 + 50;
+  static double x = 0;
+  x += 0.1;
+  return sin(x) * 160 + 140;
 }
 
 // --- display functions
@@ -126,8 +161,8 @@ void setup() {
 }
 
 void loop() {
-  // oilTempReadings.add(getOilTemp());
-  // oilPressureReadings.add(getOilPressure());
+  oilTemp.add(getOilTemp());
+  oilPressure.add(getOilPressure());
 
   if (digitalRead(A_BTN_PIN) == HIGH) {
     Serial.println("A");
@@ -146,9 +181,7 @@ void loop() {
   } else {
     switch (displayMode) {
     case COMBINED:
-      // renderCombinedDisplay(oilTempReadings.getCurrent(),
-      //                       oilPressureReadings.getCurrent());
-      renderCombinedDisplay(-69, 420);
+      renderCombinedDisplay(oilTemp.getCurrent(), oilPressure.getCurrent());
       break;
     case OIL_TEMP:
       renderOilTempDisplay();
@@ -160,6 +193,6 @@ void loop() {
   }
 
   display.display();
-  delay(33);
+  delay(1000);
   yield();
 }
