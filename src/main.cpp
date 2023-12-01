@@ -113,7 +113,7 @@ void renderSingleDisplay(const char *header, int sensorReading,
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
-  char movingAvgsLine[5 * 3] = {'\0'};
+  char movingAvgsLine[5 * 3 + 3] = {'\0'};
 
   display.clearDisplay();
 
@@ -125,7 +125,7 @@ void renderSingleDisplay(const char *header, int sensorReading,
   cy += h + 12;
 
   // current sensor value
-  display.setTextSize(2);
+  display.setTextSize(3);
   std::snprintf(sensorValueStr, 5, "%d", sensorReading);
 
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
@@ -135,8 +135,9 @@ void renderSingleDisplay(const char *header, int sensorReading,
 
   // 1m, 5m, 15m moving averages
   display.setTextSize(1);
-  std::snprintf(movingAvgsLine, 5 * 3, "%d %d %d", history->get1mMovingAvg(),
-                history->get5mMovingAvg(), history->get15mMovingAvg());
+  std::snprintf(movingAvgsLine, 5 * 3, "%d   %d   %d",
+                history->get1mMovingAvg(), history->get5mMovingAvg(),
+                history->get15mMovingAvg());
 
   display.getTextBounds(movingAvgsLine, cx, cy, &x1, &y1, &w, &h);
   display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
