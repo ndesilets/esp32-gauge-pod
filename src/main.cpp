@@ -1,11 +1,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
-#include <SPI.h>
 #include <SensorHistory.h>
 #include <Wire.h>
 
-#define SH1107_DEFAULT_ADDRESS 0x3C
+#define SH1107_DEFAULT_ADDR 0x3C
+#define DISPLAY_WIDTH 128
+#define DISPLAY_HEIGHT 64
 #define A_BTN_PIN 4
 #define B_BTN_PIN 36
 #define C_BTN_PIN 39
@@ -45,20 +46,16 @@ double getOilTemp() {
 
 void initDisplay() {
   delay(250); // wait for the OLED to power up
-  display.begin(SH1107_DEFAULT_ADDRESS, true);
+  display.begin(SH1107_DEFAULT_ADDR, true);
   display.display();
 
-  delay(1000);
+  delay(1000); // show splash screen
 
   display.clearDisplay();
   display.display();
 
   display.setRotation(1); // get rotated idiot
-  display.setTextSize(1);
   display.setTextColor(SH110X_WHITE);
-  display.setCursor(0, 0);
-
-  display.display();
 }
 
 // combined
@@ -73,13 +70,13 @@ void renderColumn(int offset, const char *header1, const char *header2,
 
   // first header
   display.getTextBounds(header1, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
   display.print(header1);
   cy += h + 2;
 
   // second header
   display.getTextBounds(header2, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
   display.print(header2);
   cy += h + 16;
 
@@ -88,7 +85,7 @@ void renderColumn(int offset, const char *header1, const char *header2,
   std::snprintf(sensorValueStr, 5, "%d", sensorValue);
 
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((64 - w) / 2), cy);
+  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
   display.print(sensorValueStr);
 }
 
@@ -102,9 +99,9 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.clearDisplay();
   display.setCursor(0, 0);
 
-  display.drawFastVLine(64, 0, 64, SH110X_WHITE);
+  display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
   renderColumn(0, oilHeader, tempHeader, oilTemp);
-  renderColumn(64, oilHeader, psiHeader, oilPressure);
+  renderColumn(DISPLAY_WIDTH / 2, oilHeader, psiHeader, oilPressure);
 
   display.display();
 }
@@ -123,16 +120,16 @@ void renderSingleDisplay(const char *header, int sensorReading,
   // header
   display.setTextSize(1);
   display.getTextBounds(header, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor((128 - w) / 2, cy);
+  display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
   display.print(header);
-  cy += h + 8;
+  cy += h + 12;
 
   // current sensor value
   display.setTextSize(2);
   std::snprintf(sensorValueStr, 5, "%d", sensorReading);
 
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor((128 - w) / 2, cy);
+  display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
   display.print(sensorValueStr);
   cy += h + 12;
 
@@ -142,7 +139,7 @@ void renderSingleDisplay(const char *header, int sensorReading,
                 history->get5mMovingAvg(), history->get15mMovingAvg());
 
   display.getTextBounds(movingAvgsLine, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor((128 - w) / 2, cy);
+  display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
   display.print(movingAvgsLine);
 
   display.display();
@@ -171,7 +168,7 @@ void loop() {
     oilPressureHistory.add(oilPressure);
   }
 
-  // temp
+  // temporary until buttons are wired up
   if (now - lastDisplayStateChange > 5000) {
     lastDisplayStateChange = now;
     displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
