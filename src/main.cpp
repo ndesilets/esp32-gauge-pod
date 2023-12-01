@@ -9,7 +9,7 @@
 #define A_BTN_PIN 4
 #define B_BTN_PIN 36
 #define C_BTN_PIN 39
-#define BUFFER_CAPACITY 900 // holds ~15 mins of data at 1rps
+#define BUFFER_CAPACITY_15m 900 // holds ~15 mins of data at 1rps
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
 enum DisplayPower { OFF, ON };
@@ -25,35 +25,70 @@ public:
   CircularBuffer();
   void add(int value);
   int getCurrent();
+  int get1mMovingAvg();
+  int get5mMovingAvg();
+  int get15mMovingAvg();
 
 private:
-  int32_t buffer[BUFFER_CAPACITY];
+  int buffer[BUFFER_CAPACITY_15m];
   uint index;
   uint capacity;
   uint size;
+
+  int sum_1m;
+  int sum_5m;
+  int sum_15m;
 };
 
 CircularBuffer::CircularBuffer() {
   index = 0;
-  capacity = BUFFER_CAPACITY;
+  capacity = BUFFER_CAPACITY_15m;
   size = 0;
+
+  sum_1m = 0;
+  sum_5m = 0;
+  sum_15m = 0;
 }
 
-void CircularBuffer::add(int32_t value) {
+void CircularBuffer::add(int value) {
   buffer[index % capacity] = value;
   index++;
 
   if (size < capacity) {
     size++;
   }
+
+  sum_1m += value;
+  if (size > 60) {
+    sum_1m -= buffer[(index - 60) % capacity];
+  }
+
+  sum_5m += value;
+  if (size > 300) {
+    sum_5m -= buffer[(index - 300) % capacity];
+  }
+
+  sum_15m += value;
+  if (size > 900) {
+    sum_15m -= buffer[(index - 900) % capacity];
+  }
 }
 
-int32_t CircularBuffer::getCurrent() { return buffer[index - 1 % capacity]; }
+int CircularBuffer::getCurrent() { return buffer[index - 1 % capacity]; }
+
+int CircularBuffer::get1mMovingAvg() { return sum_1m / 60; }
+
+int CircularBuffer::get5mMovingAvg() { return sum_5m / 300; }
+
+int CircularBuffer::get15mMovingAvg() { return sum_15m / 900; }
 
 CircularBuffer oilTempHistory = CircularBuffer();
 CircularBuffer oilPressureHistory = CircularBuffer();
 unsigned long lastSensorRead = 0;
 unsigned long now = 0;
+
+// temporary until buttons are wired up
+unsigned long lastDisplayStateChange = 0;
 
 // --- sensor data functions
 
@@ -89,6 +124,8 @@ void initDisplay() {
   display.display();
 }
 
+// combined
+
 void renderColumn(int offset, const char *header1, const char *header2,
                   int sensorValue) {
   int16_t cx, cy, x1, y1;
@@ -97,16 +134,19 @@ void renderColumn(int offset, const char *header1, const char *header2,
 
   display.setTextSize(1);
 
+  // first header
   display.getTextBounds(header1, cx, cy, &x1, &y1, &w, &h);
   display.setCursor(offset + ((64 - w) / 2), cy);
   display.print(header1);
   cy += h + 2;
 
+  // second header
   display.getTextBounds(header2, cx, cy, &x1, &y1, &w, &h);
   display.setCursor(offset + ((64 - w) / 2), cy);
   display.print(header2);
   cy += h + 16;
 
+  // sensor value
   display.setTextSize(2);
   std::snprintf(sensorValueStr, 5, "%d", sensorValue);
 
@@ -132,20 +172,41 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.display();
 }
 
-void renderOilTempDisplay() {
+// single
+
+void renderSingleDisplay(const char *header, int sensorReading,
+                         CircularBuffer *history) {
+  int16_t cx, cy, x1, y1;
+  uint16_t w, h;
+  char sensorValueStr[5] = {'\0'};
+  char movingAvgsLine[5 * 3] = {'\0'};
+
   display.clearDisplay();
 
-  display.setCursor(0, 0);
-  display.println("Oil Temp");
+  // header
+  display.setTextSize(1);
+  display.getTextBounds(header, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor((128 - w) / 2, cy);
+  display.print(header);
+  cy += h + 8;
 
-  display.display();
-}
+  // current sensor value
+  display.setTextSize(2);
+  std::snprintf(sensorValueStr, 5, "%d", sensorReading);
 
-void renderOilPressureDisplay() {
-  display.clearDisplay();
+  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor((128 - w) / 2, cy);
+  display.print(sensorValueStr);
+  cy += h + 12;
 
-  display.setCursor(0, 0);
-  display.println("Oil Pressure");
+  // 1m, 5m, 15m moving averages
+  display.setTextSize(1);
+  std::snprintf(movingAvgsLine, 5 * 3, "%d %d %d", history->get1mMovingAvg(),
+                history->get5mMovingAvg(), history->get15mMovingAvg());
+
+  display.getTextBounds(movingAvgsLine, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor((128 - w) / 2, cy);
+  display.print(movingAvgsLine);
 
   display.display();
 }
@@ -173,6 +234,12 @@ void loop() {
     oilPressureHistory.add(oilPressure);
   }
 
+  // temp
+  if (now - lastDisplayStateChange > 5000) {
+    lastDisplayStateChange = now;
+    displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
+  }
+
   if (digitalRead(A_BTN_PIN) == HIGH) {
     Serial.println("A");
   }
@@ -193,11 +260,13 @@ void loop() {
       renderCombinedDisplay(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
-      renderOilTempDisplay();
+      renderSingleDisplay("OIL TEMP", oilTemp, &oilTempHistory);
       break;
     case OIL_PRESSURE:
-      renderOilPressureDisplay();
+      renderSingleDisplay("OIL PSI", oilPressure, &oilPressureHistory);
       break;
+    default:
+      Serial.println("oh my god bruh aww hell nah man what the FUCK man");
     }
   }
 
