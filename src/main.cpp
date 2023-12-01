@@ -2,14 +2,13 @@
 #include <Adafruit_SH110X.h>
 #include <Arduino.h>
 #include <SPI.h>
+#include <SensorHistory.h>
 #include <Wire.h>
-#include <type_traits>
 
 #define SH1107_DEFAULT_ADDRESS 0x3C
 #define A_BTN_PIN 4
 #define B_BTN_PIN 36
 #define C_BTN_PIN 39
-#define BUFFER_CAPACITY_15m 900 // holds ~15 mins of data at 1rps
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
 enum DisplayPower { OFF, ON };
@@ -20,70 +19,8 @@ DisplayPower displayPower = ON;
 
 // --- sensor buffers
 
-class CircularBuffer {
-public:
-  CircularBuffer();
-  void add(int value);
-  int getCurrent();
-  int get1mMovingAvg();
-  int get5mMovingAvg();
-  int get15mMovingAvg();
-
-private:
-  int buffer[BUFFER_CAPACITY_15m];
-  uint index;
-  uint capacity;
-  uint size;
-
-  int sum_1m;
-  int sum_5m;
-  int sum_15m;
-};
-
-CircularBuffer::CircularBuffer() {
-  index = 0;
-  capacity = BUFFER_CAPACITY_15m;
-  size = 0;
-
-  sum_1m = 0;
-  sum_5m = 0;
-  sum_15m = 0;
-}
-
-void CircularBuffer::add(int value) {
-  buffer[index % capacity] = value;
-  index++;
-
-  if (size < capacity) {
-    size++;
-  }
-
-  sum_1m += value;
-  if (size > 60) {
-    sum_1m -= buffer[(index - 60) % capacity];
-  }
-
-  sum_5m += value;
-  if (size > 300) {
-    sum_5m -= buffer[(index - 300) % capacity];
-  }
-
-  sum_15m += value;
-  if (size > 900) {
-    sum_15m -= buffer[(index - 900) % capacity];
-  }
-}
-
-int CircularBuffer::getCurrent() { return buffer[index - 1 % capacity]; }
-
-int CircularBuffer::get1mMovingAvg() { return sum_1m / 60; }
-
-int CircularBuffer::get5mMovingAvg() { return sum_5m / 300; }
-
-int CircularBuffer::get15mMovingAvg() { return sum_15m / 900; }
-
-CircularBuffer oilTempHistory = CircularBuffer();
-CircularBuffer oilPressureHistory = CircularBuffer();
+SensorHistory oilTempHistory = SensorHistory();
+SensorHistory oilPressureHistory = SensorHistory();
 unsigned long lastSensorRead = 0;
 unsigned long now = 0;
 
@@ -175,7 +112,7 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
 // single
 
 void renderSingleDisplay(const char *header, int sensorReading,
-                         CircularBuffer *history) {
+                         SensorHistory *history) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
