@@ -81,7 +81,7 @@ void renderColumn(int offset, const char *header1, const char *header2,
   cy += h + 16;
 
   // sensor value
-  display.setTextSize(2);
+  display.setTextSize(3);
   std::snprintf(sensorValueStr, 5, "%d", sensorValue);
 
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
@@ -101,7 +101,7 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
 
   display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
   renderColumn(0, oilHeader, tempHeader, oilTemp);
-  renderColumn(DISPLAY_WIDTH / 2, oilHeader, psiHeader, oilPressure);
+  renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
 
   display.display();
 }
@@ -113,7 +113,8 @@ void renderSingleDisplay(const char *header, int sensorReading,
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
-  char movingAvgsLine[5 * 3 + 3] = {'\0'};
+  const int movingAvgsLineLength = 5 * 3 + 6; // 3 vals + whitespace
+  char movingAvgsLine[movingAvgsLineLength] = {'\0'};
 
   display.clearDisplay();
 
@@ -135,7 +136,7 @@ void renderSingleDisplay(const char *header, int sensorReading,
 
   // 1m, 5m, 15m moving averages
   display.setTextSize(1);
-  std::snprintf(movingAvgsLine, 5 * 3, "%d   %d   %d",
+  std::snprintf(movingAvgsLine, movingAvgsLineLength, "%d   %d   %d",
                 history->get1mMovingAvg(), history->get5mMovingAvg(),
                 history->get15mMovingAvg());
 
