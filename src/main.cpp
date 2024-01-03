@@ -7,9 +7,9 @@
 #define SH1107_DEFAULT_ADDR 0x3C
 #define DISPLAY_WIDTH 128
 #define DISPLAY_HEIGHT 64
-#define A_BTN_PIN 4
-#define B_BTN_PIN 36
-#define C_BTN_PIN 39
+#define A_BTN_PIN 14
+#define B_BTN_PIN 32
+#define C_BTN_PIN 15
 #define INTERNAL_BTN_PIN 38
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
@@ -22,7 +22,17 @@ DisplayPower displayPower = ON;
 const int tempDetents[] = {0, 180, 250};
 const int psiDetents[] = {20, 40, 60, 80};
 
-bool isButtonPressed = false;
+bool intButtonPressed = false;
+bool aButtonPressed = false;
+bool bButtonPressed = false;
+bool cButtonPressed = false;
+
+// --- jank
+
+// positive modulo
+inline int the_one_true_modulo(int i, int n) {
+    return (i % n + n) % n;
+}
 
 // --- sensor buffers
 
@@ -30,9 +40,6 @@ SensorHistory oilTempHistory = SensorHistory();
 SensorHistory oilPressureHistory = SensorHistory();
 unsigned long lastSensorRead = 0;
 unsigned long now = 0;
-
-// temporary until buttons are wired up
-unsigned long lastDisplayStateChange = 0;
 
 // --- sensor data functions
 
@@ -51,7 +58,7 @@ double getOilTemp() {
 // --- display functions
 
 void initDisplay() {
-  delay(250); // wait for the OLED to power up
+  delay(500); // wait for the OLED to power up
   display.begin(SH1107_DEFAULT_ADDR, true);
   display.display();
 
@@ -105,7 +112,7 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.clearDisplay();
   display.setCursor(0, 0);
 
-  // display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
+  display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
   renderColumn(0, oilHeader, tempHeader, oilTemp);
   renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
 
@@ -189,8 +196,11 @@ void setup() {
   pinMode(C_BTN_PIN, INPUT_PULLUP);
   pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
 
+  Serial.println("LMAO!");
+
   initDisplay();
 }
+
 
 void loop() {
   int oilTemp = getOilTemp();
@@ -201,32 +211,46 @@ void loop() {
     lastSensorRead = now;
     oilTempHistory.add(oilTemp);
     oilPressureHistory.add(oilPressure);
+
+    // int sensorValue = analogRead(A0);
+    // Serial.printf("A0: %d\n", sensorValue);
   }
 
-  // temporary until buttons are wired up
-  // if (now - lastDisplayStateChange > 5000) {
-  //   lastDisplayStateChange = now;
-  //   displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
-  // }
+  //
+  // button handling
+  //
 
   if (!digitalRead(INTERNAL_BTN_PIN)) {
-    isButtonPressed = true;
-  } else if (isButtonPressed) {
-    isButtonPressed = false;
+    intButtonPressed = true;
+  } else if (intButtonPressed) {
+    intButtonPressed = false;
     displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
   }
 
-  if (digitalRead(A_BTN_PIN) == HIGH) {
-    Serial.println("A");
+  if (!digitalRead(A_BTN_PIN)) {
+    aButtonPressed = true;
+  } else if (aButtonPressed) {
+    aButtonPressed = false;
+    displayMode = COMBINED;
   }
 
-  if (digitalRead(B_BTN_PIN) == HIGH) {
-    Serial.println("B");
+  if (!digitalRead(B_BTN_PIN)) {
+    bButtonPressed = true;
+  } else if (bButtonPressed) {
+    bButtonPressed = false;
+    displayMode = static_cast<DisplayMode>(the_one_true_modulo(displayMode - 1, 3));
   }
 
-  if (digitalRead(C_BTN_PIN) == HIGH) {
-    Serial.println("C");
+  if (!digitalRead(C_BTN_PIN)) {
+    cButtonPressed = true;
+  } else if (cButtonPressed) {
+    cButtonPressed = false;
+    displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
   }
+
+  //
+  // display rendering
+  //
 
   if (displayPower == OFF) {
     display.clearDisplay();
