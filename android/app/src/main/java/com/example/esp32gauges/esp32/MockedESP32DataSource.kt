@@ -1,4 +1,4 @@
-package com.example.esp32gauges
+package com.example.esp32gauges.esp32
 
 import com.example.esp32gauges.models.SensorData
 import kotlinx.coroutines.delay
@@ -9,6 +9,7 @@ import kotlin.math.sin
 class MockedESP32DataSource : ESP32DataSourceI {
     private var phase = 0.0
 
+    // generates an oscillating value between min and max
     private fun generateValue(phase: Double, min: Float, max: Float) : Float {
         return ((sin(phase) * 0.5 + 0.5) * (max - min) + min).toFloat()
     }

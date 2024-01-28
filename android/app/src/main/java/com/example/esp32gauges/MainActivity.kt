@@ -25,9 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.example.esp32gauges.sensors.NumericStatus
-import com.example.esp32gauges.sensors.PressureStatus
-import com.example.esp32gauges.sensors.TempStatus
+import com.example.esp32gauges.esp32.MockedESP32DataSource
+import com.example.esp32gauges.esp32.SensorDataRepository
+import com.example.esp32gauges.sensors.status.NumericStatus
+import com.example.esp32gauges.sensors.status.PressureStatus
+import com.example.esp32gauges.sensors.status.TempStatus
 import com.example.esp32gauges.ui.theme.ESP32GaugesTheme
 
 class MainActivity : ComponentActivity() {

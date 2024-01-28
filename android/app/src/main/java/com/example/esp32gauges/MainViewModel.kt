@@ -2,14 +2,15 @@ package com.example.esp32gauges
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.esp32gauges.esp32.SensorDataRepository
 import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.MonitoredNumericSensor
 import com.example.esp32gauges.sensors.MonitoredPressureSensor
 import com.example.esp32gauges.sensors.MonitoredTempSensor
-import com.example.esp32gauges.sensors.NumericStatus
-import com.example.esp32gauges.sensors.PressureStatus
+import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.SupplementalNumericSensor
-import com.example.esp32gauges.sensors.TempStatus
+import com.example.esp32gauges.sensors.status.PressureStatus
+import com.example.esp32gauges.sensors.status.TempStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
