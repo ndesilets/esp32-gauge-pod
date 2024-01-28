@@ -1,10 +1,10 @@
 package com.example.esp32gauges
 
+import com.example.esp32gauges.models.SensorData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlin.math.sin
-import kotlin.random.Random
 
 class MockedESP32DataSource : ESP32DataSourceI {
     private var phase = 0.0

@@ -33,20 +33,36 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SensorsList(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val uiState = viewModel.uiState.collectAsState()
+    val sensors = uiState.value.monitoredSensorData
 
     Column {
-        Text(text="oil pressure: ${uiState.value.sensorData?.oilPressure ?: 0}")
-        Text(text="oil temperature: ${uiState.value.sensorData?.oilTemperature ?: 0}")
-        Text(text="cooltant temperature: ${uiState.value.sensorData?.coolantTemperature ?: 0}")
-        Text(text="boost psi: ${uiState.value.sensorData?.boostPsi ?: 0}")
-        Text(text="dynamic advance multiplier: ${uiState.value.sensorData?.dynamicAdvanceMultiplier ?: 0}")
-        Text(text="fine knock learn: ${uiState.value.sensorData?.fineKnock ?: 0}")
-        Text(text="feedback knock: ${uiState.value.sensorData?.feedbackKnock ?: 0}")
-        Text(text="af long term trim: ${uiState.value.sensorData?.afLearn ?: 0}")
+        Text(text="oil pressure: ${sensors.oilPressure.value}")
+        Text(text="oil pressure status: ${sensors.oilPressure.status}")
 
-        Text(text="engine rpm: ${uiState.value.sensorData?.engineRpm ?: 0}")
-        Text(text="engine load: ${uiState.value.sensorData?.engineLoad ?: 0}")
-        Text(text="throttle position: ${uiState.value.sensorData?.throttlePosition ?: 0}")
+        Text(text="oil temp: ${sensors.oilTemp.value}")
+        Text(text="oil temp status: ${sensors.oilTemp.status}")
+
+        Text(text="coolant temp: ${sensors.coolantTemp.value}")
+        Text(text="coolant temp status: ${sensors.coolantTemp.status}")
+
+        Text(text="boost psi: ${sensors.boostPressure.value}")
+        Text(text="boost psi status: ${sensors.boostPressure.status}")
+
+        Text(text="dynamic advance multiplier: ${sensors.dynamicAdvanceMultiplier.value}")
+        Text(text="dynamic advance multiplier status: ${sensors.dynamicAdvanceMultiplier.status}")
+
+        Text(text="fine knock learn: ${sensors.fineKnock.value}")
+        Text(text="fine knock learn status: ${sensors.fineKnock.status}")
+
+        Text(text="feedback knock: ${sensors.feedbackKnock.value}")
+        Text(text="feedback knock status: ${sensors.feedbackKnock.status}")
+
+        Text(text="af long term trim: ${sensors.afLearn.value}")
+        Text(text="af long term trim status: ${sensors.afLearn.status}")
+
+        Text(text="engine rpm: ${sensors.engineRpm.value}")
+        Text(text="engine load: ${sensors.engineLoad.value}")
+        Text(text="throttle position: ${sensors.throttlePosition.value}")
     }
 }
 

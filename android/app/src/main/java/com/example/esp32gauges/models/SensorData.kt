@@ -1,10 +1,10 @@
-package com.example.esp32gauges
+package com.example.esp32gauges.models
 
 data class SensorData (
     val oilPressure: Float,
-    val oilTemperature: Float,
-    val coolantTemperature: Float,
-    val boostPsi: Float,
+    val oilTemp: Float,
+    val coolantTemp: Float,
+    val boostPressure: Float,
 
     val dynamicAdvanceMultiplier: Float,
     val fineKnock: Float,
