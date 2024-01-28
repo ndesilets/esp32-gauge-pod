@@ -6,8 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,12 +23,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.esp32.SensorDataRepository
+import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
 import com.example.esp32gauges.sensors.status.TempStatus
@@ -38,45 +42,59 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, true)
-        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = false
-
         setContent {
             ESP32GaugesTheme {
-                Surface {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                    ) {
-                        SensorIndicatorOverview(
-                            viewModel, modifier = Modifier
-                                .height(108.dp)
-                                .fillMaxWidth()
-                        )
-                    }
-                }
+                Dashboard(viewModel)
             }
         }
     }
 }
 
+//
+
 @Composable
-fun SensorIndicatorOverview(viewModel: MainViewModel, modifier: Modifier = Modifier) {
+fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val uiState = viewModel.uiState.collectAsState()
     val sensors = uiState.value.monitoredSensorData
 
+    Surface {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            SensorIndicatorOverview(
+                sensors, modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DashboardPreview() {
+    ESP32GaugesTheme {
+        Dashboard(viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource())))
+    }
+}
+
+//
+
+@Composable
+fun SensorIndicatorOverview(sensors: MonitoredSensorData, modifier: Modifier = Modifier) {
 //    Log.d("sensors: %s", sensors.toString())
 
     Surface(
-        modifier.padding(4.dp)
+        modifier
+            .padding(4.dp)
             .border(BorderStroke(1.dp, Color.White), shape = RoundedCornerShape(8.dp))
     ) {
         Column(modifier) {
             Row(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 PressureSensorStatus(
                     name = "Oil PSI",
@@ -84,12 +102,12 @@ fun SensorIndicatorOverview(viewModel: MainViewModel, modifier: Modifier = Modif
                     modifier.weight(1f)
                 )
                 TempSensorStatus(
-                    name = "Oil T",
+                    name = "Oil Temp",
                     status = sensors.oilTemp.status,
                     modifier.weight(1f)
                 )
                 TempSensorStatus(
-                    name = "Coolant T",
+                    name = "Coolant Temp",
                     status = sensors.coolantTemp.status,
                     modifier.weight(1f)
                 )
@@ -101,7 +119,6 @@ fun SensorIndicatorOverview(viewModel: MainViewModel, modifier: Modifier = Modif
             }
             Row(
                 modifier = Modifier
-                    .weight(1f)
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
             ) {
@@ -130,10 +147,25 @@ fun SensorIndicatorOverview(viewModel: MainViewModel, modifier: Modifier = Modif
     }
 }
 
+@Preview(heightDp = 120, widthDp = 480)
+@Composable
+fun SensorIndicatorOverviewPreview() {
+    ESP32GaugesTheme {
+        SensorIndicatorOverview(MonitoredSensorData())
+    }
+}
+
+//
+
 @Composable
 fun StatusIndicator(name: String, color: Color, modifier: Modifier = Modifier) {
-    Column(modifier.padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = name)
+    Column(
+        modifier
+            .padding(4.dp)
+            .height(IntrinsicSize.Min),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = name, textAlign = TextAlign.Center)
         Box(
             modifier
                 .height(4.dp)
@@ -177,13 +209,7 @@ fun NumericSensorStatus(name: String, status: NumericStatus, modifier: Modifier 
     StatusIndicator(name, color, modifier)
 }
 
-@Preview(showBackground = true, heightDp = 120)
-@Composable
-fun SensorsOverviewPreview() {
-    ESP32GaugesTheme {
-        SensorIndicatorOverview(MainViewModel(SensorDataRepository(MockedESP32DataSource())))
-    }
-}
+//
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
