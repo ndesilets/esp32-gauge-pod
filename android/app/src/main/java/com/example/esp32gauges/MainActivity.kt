@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.esp32.SensorDataRepository
 import com.example.esp32gauges.models.MonitoredSensorData
@@ -66,11 +68,13 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 sensors, modifier = Modifier
                     .fillMaxWidth()
             )
+
+//            BarGauge(percentage = 0.55f, modifier.size(24.dp, 4.dp))
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, widthDp = 480)
 @Composable
 fun DashboardPreview() {
     ESP32GaugesTheme {
