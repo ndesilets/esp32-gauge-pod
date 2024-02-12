@@ -82,16 +82,17 @@ fun BarGauge(
 
                 val textLayoutResult = textMeasurer.measure(detents[i].toInt().toString(), textStyle)
 
-                var offset: Offset
-                when (detents[i]) {
+                val offset = when (detents[i]) {
                     minVal -> {
-                        offset =  Offset(detentX, detentHeight + 2.dp.toPx())
+                        Offset(detentX, detentHeight + 2.dp.toPx())
                     }
+
                     maxVal -> {
-                        offset = Offset(detentX - textLayoutResult.size.width, detentHeight + 2.dp.toPx())
+                        Offset(detentX - textLayoutResult.size.width, detentHeight + 2.dp.toPx())
                     }
+
                     else -> {
-                        offset = Offset(detentX - textLayoutResult.size.width / 2, detentHeight + 2.dp.toPx())
+                        Offset(detentX - textLayoutResult.size.width / 2, detentHeight + 2.dp.toPx())
                     }
                 }
 

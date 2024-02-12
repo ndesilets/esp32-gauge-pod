@@ -4,10 +4,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -16,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Surface
@@ -27,14 +23,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.esp32.SensorDataRepository
@@ -43,9 +36,10 @@ import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
 import com.example.esp32gauges.sensors.status.TempStatus
 import com.example.esp32gauges.ui.theme.ESP32GaugesTheme
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
-    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+    private val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,7 +144,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text("Dyn Adv Multiplier")
                 Text(
-                    String.format("%.1f", sensors.dynamicAdvanceMultiplier.value),
+                    String.format(Locale.US, "%.1f", sensors.dynamicAdvanceMultiplier.value),
                     fontSize = 48.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
@@ -163,7 +157,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text("Fine Knock Learn")
                 Text(
-                    String.format("%.1f", sensors.fineKnock.value),
+                    String.format(Locale.US, "%.1f", sensors.fineKnock.value),
                     fontSize = 48.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
@@ -181,7 +175,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text("Feedback Knock")
                 Text(
-                    String.format("%.1f", sensors.feedbackKnock.value),
+                    String.format(Locale.US, "%.1f", sensors.feedbackKnock.value),
                     fontSize = 48.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
@@ -194,7 +188,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             ) {
                 Text("AF Long Term Learn")
                 Text(
-                    String.format("%.1f", sensors.afLearn.value),
+                    String.format(Locale.US, "%.1f", sensors.afLearn.value),
                     fontSize = 48.sp,
                     fontFamily = FontFamily.Monospace,
                     fontWeight = FontWeight.Bold
@@ -312,10 +306,10 @@ fun StatusIndicator(name: String, color: Color, modifier: Modifier = Modifier) {
 
 @Composable
 fun PressureSensorStatus(name: String, status: PressureStatus, modifier: Modifier = Modifier) {
-    val color = when {
-        status == PressureStatus.LOW -> Color.Yellow
-        status == PressureStatus.OK -> Color.Green
-        status == PressureStatus.HIGH -> Color.Yellow
+    val color = when (status) {
+        PressureStatus.LOW -> Color.Yellow
+        PressureStatus.OK -> Color.Green
+        PressureStatus.HIGH -> Color.Yellow
         else -> Color.Red
     }
 
@@ -324,10 +318,10 @@ fun PressureSensorStatus(name: String, status: PressureStatus, modifier: Modifie
 
 @Composable
 fun TempSensorStatus(name: String, status: TempStatus, modifier: Modifier = Modifier) {
-    val color = when {
-        status == TempStatus.COLD -> Color.Blue
-        status == TempStatus.OK -> Color.Green
-        status == TempStatus.HOT -> Color.Yellow
+    val color = when (status) {
+        TempStatus.COLD -> Color.Blue
+        TempStatus.OK -> Color.Green
+        TempStatus.HOT -> Color.Yellow
         else -> Color.Red
     }
 
@@ -336,9 +330,9 @@ fun TempSensorStatus(name: String, status: TempStatus, modifier: Modifier = Modi
 
 @Composable
 fun NumericSensorStatus(name: String, status: NumericStatus, modifier: Modifier = Modifier) {
-    val color = when {
-        status == NumericStatus.OK -> Color.Green
-        status == NumericStatus.WARN -> Color.Yellow
+    val color = when (status) {
+        NumericStatus.OK -> Color.Green
+        NumericStatus.WARN -> Color.Yellow
         else -> Color.Red
     }
 
