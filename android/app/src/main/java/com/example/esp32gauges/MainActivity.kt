@@ -76,7 +76,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
         )
 
-        Divider(modifier.padding(vertical = 8.dp))
+        Divider(modifier.padding(vertical = 32.dp))
 
         Column(
             modifier = modifier.fillMaxWidth(),
@@ -138,32 +138,68 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             )
         }
 
-        Divider(modifier.padding(vertical = 8.dp))
+        Divider(modifier.padding(vertical = 32.dp))
 
-        Column(
-            modifier = modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Dynamic Advance Multiplier")
-            Text(
-                "${sensors.dynamicAdvanceMultiplier.value.toInt()}",
-                fontSize = 48.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
+        Row(
+            modifier
+                .height(80.dp)
+                .fillMaxWidth()) {
+            Column(
+                modifier = modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Dyn Adv Multiplier")
+                Text(
+                    String.format("%.1f", sensors.dynamicAdvanceMultiplier.value),
+                    fontSize = 48.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Column(
+                modifier = modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("Fine Knock Learn")
+                Text(
+                    String.format("%.1f", sensors.fineKnock.value),
+                    fontSize = 48.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
 
-        Column(
-            modifier = modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("Feedback Knock")
-            Text(
-                "${sensors.feedbackKnock.value.toInt()}",
-                fontSize = 48.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
+        Row(
+            modifier
+                .height(80.dp)
+                .fillMaxWidth()) {
+            Column(
+                modifier = modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text("Feedback Knock")
+                Text(
+                    String.format("%.1f", sensors.feedbackKnock.value),
+                    fontSize = 48.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Column(
+                modifier = modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("AF Long Term Learn")
+                Text(
+                    String.format("%.1f", sensors.afLearn.value),
+                    fontSize = 48.sp,
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -171,9 +207,11 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 @Preview(widthDp = 480, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardPreview() {
+    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+
     ESP32GaugesTheme {
         Surface() {
-            Dashboard(viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource())))
+            Dashboard(viewModel)
         }
     }
 }
@@ -239,11 +277,17 @@ fun SensorIndicatorOverview(sensors: MonitoredSensorData, modifier: Modifier = M
     }
 }
 
-@Preview(heightDp = 120, widthDp = 480)
+@Preview(heightDp = 120, widthDp = 480, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun SensorIndicatorOverviewPreview() {
+    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+    val uiState = viewModel.uiState.collectAsState()
+    val sensors = uiState.value.monitoredSensorData
+
     ESP32GaugesTheme {
-        SensorIndicatorOverview(MonitoredSensorData())
+        Surface() {
+            SensorIndicatorOverview(sensors)
+        }
     }
 }
 
