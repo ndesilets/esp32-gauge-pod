@@ -36,6 +36,16 @@ import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
 import com.example.esp32gauges.sensors.status.TempStatus
 import com.example.esp32gauges.ui.theme.ESP32GaugesTheme
+import com.patrykandpatrick.vico.compose.chart.CartesianChartHost
+import com.patrykandpatrick.vico.compose.chart.layer.lineSpec
+import com.patrykandpatrick.vico.compose.chart.layer.rememberLineCartesianLayer
+import com.patrykandpatrick.vico.compose.chart.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.component.shape.shader.color
+import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
+import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
+import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
+import com.patrykandpatrick.vico.core.model.CartesianChartModel
+import com.patrykandpatrick.vico.core.model.LineCartesianLayerModel
 import java.util.Locale
 
 class MainActivity : ComponentActivity() {
@@ -197,6 +207,31 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 )
             }
         }
+
+        val model3 =
+            CartesianChartModel(
+                LineCartesianLayerModel.build {
+                    series(3, 2, 2, 3, 1)
+                    series(1, 3, 1, 2, 3)
+                },
+            )
+        val yellow = Color(0xFFFFAA4A)
+
+        CartesianChartHost(
+            chart = rememberCartesianChart(
+                rememberLineCartesianLayer(
+                    listOf(
+                        lineSpec(
+                            shader = DynamicShaders.color(yellow),
+                            backgroundShader = DynamicShaders.verticalGradient(
+                                arrayOf(yellow.copy(alpha = 0.5f), yellow.copy(alpha = 0f))
+                            )
+                        )
+                    ),
+                    axisValueOverrider = AxisValueOverrider.fixed(maxY = 4f)
+                )
+            ), model = model3
+        )
     }
 }
 
