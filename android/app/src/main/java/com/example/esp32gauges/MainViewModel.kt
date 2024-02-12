@@ -7,8 +7,8 @@ import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.MonitoredNumericSensor
 import com.example.esp32gauges.sensors.MonitoredPressureSensor
 import com.example.esp32gauges.sensors.MonitoredTempSensor
-import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.SupplementalNumericSensor
+import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
 import com.example.esp32gauges.sensors.status.TempStatus
 import kotlinx.coroutines.flow.MutableStateFlow

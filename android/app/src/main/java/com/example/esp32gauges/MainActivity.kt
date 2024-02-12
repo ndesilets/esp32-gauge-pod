@@ -137,7 +137,8 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         Row(
             modifier
                 .height(80.dp)
-                .fillMaxWidth()) {
+                .fillMaxWidth()
+        ) {
             Column(
                 modifier = modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -168,7 +169,8 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         Row(
             modifier
                 .height(80.dp)
-                .fillMaxWidth()) {
+                .fillMaxWidth()
+        ) {
             Column(
                 modifier = modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
