@@ -24,7 +24,7 @@ fun BarGauge(
     minVal: Float,
     maxVal: Float,
     currentVal: Float,
-    detentStepSize: Float,
+    detents: List<Float>,
     modifier: Modifier = Modifier
 ) {
     val textMeasurer = rememberTextMeasurer()
@@ -59,18 +59,15 @@ fun BarGauge(
                 .height(24.dp)
                 .fillMaxWidth()
         ) {
-            val barHeight = size.height
             val barWidth = size.width
 
             // detents
-            val numDetents = (maxVal - minVal) / detentStepSize + 1
-            val detentPctPositions = (0 until numDetents.toInt()).map {
-                (it * detentStepSize + minVal) / maxVal
-            }
-
-            // detent values
 
             val textStyle = TextStyle(color = Color.White, fontSize = 10.sp)
+
+            val detentPctPositions = detents.map {
+                (it - minVal) / (maxVal - minVal)
+            }
 
             for ((i, detentPct) in detentPctPositions.withIndex()) {
                 val detentX = (barWidth - 8.dp.toPx()) * detentPct + 4.dp.toPx()
@@ -83,15 +80,14 @@ fun BarGauge(
                     strokeWidth = 2f
                 )
 
-                val detentVal = (detentPct * (maxVal - minVal)).toInt().toString()
-                val textLayoutResult = textMeasurer.measure(detentVal, textStyle)
+                val textLayoutResult = textMeasurer.measure(detents[i].toInt().toString(), textStyle)
 
                 var offset: Offset
-                when (i) {
-                    0 -> {
+                when (detents[i]) {
+                    minVal -> {
                         offset =  Offset(detentX, detentHeight + 2.dp.toPx())
                     }
-                    numDetents.toInt() - 1 -> {
+                    maxVal -> {
                         offset = Offset(detentX - textLayoutResult.size.width, detentHeight + 2.dp.toPx())
                     }
                     else -> {
@@ -100,8 +96,6 @@ fun BarGauge(
                 }
 
                 drawText(textLayoutResult = textLayoutResult, topLeft = offset)
-
-
             }
         }
     }
@@ -111,10 +105,10 @@ fun BarGauge(
 @Composable
 fun BarGaugePreview() {
     BarGauge(
-        minVal = 0f,
+        minVal = -20f,
         maxVal = 300f,
         currentVal = 60f,
-        detentStepSize = 20f,
+        detents = listOf(-20f, 0f, 32f, 100f,180f, 230f, 300f),
         modifier = Modifier
     )
 }

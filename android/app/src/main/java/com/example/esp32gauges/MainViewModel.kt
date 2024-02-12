@@ -41,7 +41,7 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                     val oilPressure = MonitoredPressureSensor(
                         sensorData.oilPressure, when {
                             sensorData.engineRpm < 500 -> PressureStatus.OK // ignore if engine is off
-                            sensorData.oilPressure < 20 -> PressureStatus.CRITICAL
+                            sensorData.oilPressure < 10 -> PressureStatus.CRITICAL
                             else -> PressureStatus.OK
                         }
                     )

@@ -1,5 +1,6 @@
 package com.example.esp32gauges
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,9 +26,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.example.esp32gauges.composables.BarGauge
@@ -46,7 +52,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ESP32GaugesTheme {
-                Dashboard(viewModel)
+                Surface() {
+                    Dashboard(viewModel)
+                }
             }
         }
     }
@@ -59,26 +67,114 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val uiState = viewModel.uiState.collectAsState()
     val sensors = uiState.value.monitoredSensorData
 
-    Surface {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            SensorIndicatorOverview(
-                sensors, modifier = Modifier
-                    .fillMaxWidth()
-            )
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+    ) {
+        SensorIndicatorOverview(
+            sensors, modifier = Modifier
+                .fillMaxWidth()
+        )
 
-//            BarGauge(percentage = 0.55f, modifier.size(24.dp, 4.dp))
+        Divider(modifier.padding(vertical = 8.dp))
+
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Coolant Temp")
+            Text(
+                "${sensors.coolantTemp.value.toInt()}",
+                fontSize = 24.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold
+            )
+            BarGauge(
+                minVal = -20f,
+                maxVal = 300f,
+                currentVal = sensors.coolantTemp.value,
+                detents = listOf(-20f, 0f, 32f, 100f, 180f, 230f, 300f),
+                modifier
+            )
+        }
+
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Oil Temp")
+            Text(
+                "${sensors.oilTemp.value.toInt()}",
+                fontSize = 24.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold
+            )
+            BarGauge(
+                minVal = -20f,
+                maxVal = 300f,
+                currentVal = sensors.oilTemp.value,
+                detents = listOf(-20f, 0f, 32f, 100f, 180f, 230f, 300f),
+                modifier
+            )
+        }
+
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Oil Pressure")
+            Text(
+                "${sensors.oilPressure.value.toInt()}",
+                fontSize = 24.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold
+            )
+            BarGauge(
+                minVal = 0f,
+                maxVal = 100f,
+                currentVal = sensors.oilPressure.value,
+                detents = listOf(0f, 10f, 20f, 40f, 60f, 80f, 100f),
+                modifier
+            )
+        }
+
+        Divider(modifier.padding(vertical = 8.dp))
+
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Dynamic Advance Multiplier")
+            Text(
+                "${sensors.dynamicAdvanceMultiplier.value.toInt()}",
+                fontSize = 48.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Feedback Knock")
+            Text(
+                "${sensors.feedbackKnock.value.toInt()}",
+                fontSize = 48.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
 
-@Preview(showBackground = true, widthDp = 480)
+@Preview(widthDp = 480, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardPreview() {
     ESP32GaugesTheme {
-        Dashboard(viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource())))
+        Surface() {
+            Dashboard(viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource())))
+        }
     }
 }
 
@@ -88,65 +184,57 @@ fun DashboardPreview() {
 fun SensorIndicatorOverview(sensors: MonitoredSensorData, modifier: Modifier = Modifier) {
 //    Log.d("sensors: %s", sensors.toString())
 
-    Surface(
-        modifier
-            .padding(4.dp)
-            .border(BorderStroke(1.dp, Color.White), shape = RoundedCornerShape(8.dp))
-    ) {
-        Column(modifier) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                PressureSensorStatus(
-                    name = "Oil PSI",
-                    status = sensors.oilPressure.status,
-                    modifier.weight(1f)
-                )
-                TempSensorStatus(
-                    name = "Oil Temp",
-                    status = sensors.oilTemp.status,
-                    modifier.weight(1f)
-                )
-                TempSensorStatus(
-                    name = "Coolant Temp",
-                    status = sensors.coolantTemp.status,
-                    modifier.weight(1f)
-                )
-                PressureSensorStatus(
-                    name = "Boost PSI",
-                    status = sensors.boostPressure.status,
-                    modifier.weight(1f)
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            ) {
-                NumericSensorStatus(
-                    name = "DAM",
-                    status = sensors.dynamicAdvanceMultiplier.status,
-                    modifier.weight(1f)
-                )
-                NumericSensorStatus(
-                    name = "FN Knock",
-                    status = sensors.dynamicAdvanceMultiplier.status,
-                    modifier.weight(1f)
-                )
-                NumericSensorStatus(
-                    name = "FB Knock",
-                    status = sensors.dynamicAdvanceMultiplier.status,
-                    modifier.weight(1f)
-                )
-                NumericSensorStatus(
-                    name = "AF Learn",
-                    status = sensors.dynamicAdvanceMultiplier.status,
-                    modifier.weight(1f)
-                )
-            }
+    Column(modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp)
+        ) {
+            PressureSensorStatus(
+                name = "Oil PSI",
+                status = sensors.oilPressure.status,
+                modifier.weight(1f)
+            )
+            TempSensorStatus(
+                name = "Oil Temp",
+                status = sensors.oilTemp.status,
+                modifier.weight(1f)
+            )
+            TempSensorStatus(
+                name = "Coolant Temp",
+                status = sensors.coolantTemp.status,
+                modifier.weight(1f)
+            )
+            PressureSensorStatus(
+                name = "Boost PSI",
+                status = sensors.boostPressure.status,
+                modifier.weight(1f)
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            NumericSensorStatus(
+                name = "DAM",
+                status = sensors.dynamicAdvanceMultiplier.status,
+                modifier.weight(1f)
+            )
+            NumericSensorStatus(
+                name = "FN Knock",
+                status = sensors.dynamicAdvanceMultiplier.status,
+                modifier.weight(1f)
+            )
+            NumericSensorStatus(
+                name = "FB Knock",
+                status = sensors.dynamicAdvanceMultiplier.status,
+                modifier.weight(1f)
+            )
+            NumericSensorStatus(
+                name = "AF Learn",
+                status = sensors.dynamicAdvanceMultiplier.status,
+                modifier.weight(1f)
+            )
         }
     }
 }
