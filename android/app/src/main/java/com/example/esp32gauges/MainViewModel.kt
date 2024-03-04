@@ -11,9 +11,11 @@ import com.example.esp32gauges.sensors.SupplementalNumericSensor
 import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
 import com.example.esp32gauges.sensors.status.TempStatus
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -32,9 +34,10 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
     }
 
     // handle business logic
+    @OptIn(FlowPreview::class)
     private fun monitorSensorData() {
         viewModelScope.launch {
-            repository.getSensorDataStream()
+            val monitoredSensorDataFlow = repository.getSensorDataStream()
                 .transform { sensorData ->
                     // monitored
 
@@ -125,6 +128,12 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                         )
                     )
                 }
+
+            monitoredSensorDataFlow.debounce(10_000).collect {
+
+            }
+
+            monitoredSensorDataFlow
                 .collect { monitoredSensorData ->
                     _uiState.value = _uiState.value.copy(monitoredSensorData = monitoredSensorData)
                 }

@@ -117,7 +117,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 minVal = -20f,
                 maxVal = 300f,
                 currentVal = sensors.oilTemp.value,
-                detents = listOf(-20f, 0f, 32f, 100f, 180f, 230f, 300f),
+                detents = listOf(-20f, 0f, 32f, 100f, 180f, 250f, 300f),
                 modifier
             )
         }
@@ -144,78 +144,13 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
         Divider(modifier.padding(vertical = 32.dp))
 
-        Row(
-            modifier
-                .height(80.dp)
-                .fillMaxWidth()
-        ) {
-            Column(
-                modifier = modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Dyn Adv Multiplier")
-                Text(
-                    String.format(Locale.US, "%.1f", sensors.dynamicAdvanceMultiplier.value),
-                    fontSize = 48.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Column(
-                modifier = modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Fine Knock Learn")
-                Text(
-                    String.format(Locale.US, "%.1f", sensors.fineKnock.value),
-                    fontSize = 48.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        Row(
-            modifier
-                .height(80.dp)
-                .fillMaxWidth()
-        ) {
-            Column(
-                modifier = modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text("Feedback Knock")
-                Text(
-                    String.format(Locale.US, "%.1f", sensors.feedbackKnock.value),
-                    fontSize = 48.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Column(
-                modifier = modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("AF Long Term Learn")
-                Text(
-                    String.format(Locale.US, "%.1f", sensors.afLearn.value),
-                    fontSize = 48.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
         val model3 =
             CartesianChartModel(
                 LineCartesianLayerModel.build {
-                    series(3, 2, 2, 3, 1)
-                    series(1, 3, 1, 2, 3)
+                    series(1, 1, 0.75, 1, 1)
                 },
             )
-        val yellow = Color(0xFFFFAA4A)
+        val yellow = Color(0xFFFFFFFF)
 
         CartesianChartHost(
             chart = rememberCartesianChart(
@@ -228,9 +163,13 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                             )
                         )
                     ),
-                    axisValueOverrider = AxisValueOverrider.fixed(maxY = 4f)
+                    axisValueOverrider = AxisValueOverrider.fixed(maxY = 1f, minY = 0f)
                 )
-            ), model = model3
+            ),
+            model = model3,
+            modifier = modifier
+                .fillMaxWidth()
+                .height(40.dp)
         )
     }
 }
