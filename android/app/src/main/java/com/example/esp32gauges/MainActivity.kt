@@ -15,10 +15,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,9 +47,11 @@ import com.patrykandpatrick.vico.compose.component.shape.shader.color
 import com.patrykandpatrick.vico.compose.component.shape.shader.verticalGradient
 import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
-import com.patrykandpatrick.vico.core.model.CartesianChartModel
-import com.patrykandpatrick.vico.core.model.LineCartesianLayerModel
-import java.util.Locale
+import com.patrykandpatrick.vico.core.model.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.model.lineSeries
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     private val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
@@ -66,10 +71,20 @@ class MainActivity : ComponentActivity() {
 
 //
 
+
+private val WHITE = Color(0xFFFFFFFF)
+
 @Composable
 fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     val uiState = viewModel.uiState.collectAsState()
     val sensors = uiState.value.monitoredSensorData
+
+    val modelProducer = remember { CartesianChartModelProducer.build() }
+    modelProducer.tryRunTransaction {
+        lineSeries {
+            series(sensors.dynamicAdvanceMultiplierHistory)
+        }
+    }
 
     Column(
         modifier = modifier
@@ -142,31 +157,23 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             )
         }
 
-        Divider(modifier.padding(vertical = 32.dp))
-
-        val model3 =
-            CartesianChartModel(
-                LineCartesianLayerModel.build {
-                    series(1, 1, 0.75, 1, 1)
-                },
-            )
-        val yellow = Color(0xFFFFFFFF)
+        HorizontalDivider(modifier.padding(vertical = 32.dp))
 
         CartesianChartHost(
             chart = rememberCartesianChart(
                 rememberLineCartesianLayer(
                     listOf(
                         lineSpec(
-                            shader = DynamicShaders.color(yellow),
+                            shader = DynamicShaders.color(WHITE),
                             backgroundShader = DynamicShaders.verticalGradient(
-                                arrayOf(yellow.copy(alpha = 0.5f), yellow.copy(alpha = 0f))
+                                arrayOf(WHITE.copy(alpha = 0.5f), WHITE.copy(alpha = 0f))
                             )
                         )
                     ),
-                    axisValueOverrider = AxisValueOverrider.fixed(maxY = 1f, minY = 0f)
+                    axisValueOverrider = AxisValueOverrider.fixed(minY = 0f, maxY = 1f,)
                 )
             ),
-            model = model3,
+            modelProducer = modelProducer,
             modifier = modifier
                 .fillMaxWidth()
                 .height(40.dp)

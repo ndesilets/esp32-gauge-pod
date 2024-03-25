@@ -12,6 +12,8 @@ data class MonitoredSensorData(
     val boostPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
 
     val dynamicAdvanceMultiplier: MonitoredNumericSensor = MonitoredNumericSensor(),
+    val dynamicAdvanceMultiplierHistory: List<Float> = listOf(),
+
     val fineKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
     val feedbackKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
     val afLearn: MonitoredNumericSensor = MonitoredNumericSensor(),

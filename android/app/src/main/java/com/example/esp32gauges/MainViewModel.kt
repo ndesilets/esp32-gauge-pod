@@ -2,6 +2,7 @@ package com.example.esp32gauges
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.esp32gauges.ds.CircularBuffer
 import com.example.esp32gauges.esp32.SensorDataRepository
 import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.MonitoredNumericSensor
@@ -18,7 +19,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
+import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.sin
 
 data class MainUiState(
     val monitoredSensorData: MonitoredSensorData = MonitoredSensorData()
@@ -28,6 +31,8 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
     // expose screen ui state
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
+
+    val damHistory = CircularBuffer<Float>(30)
 
     init {
         monitorSensorData()
@@ -81,6 +86,7 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                             else -> NumericStatus.OK
                         }
                     )
+                    damHistory.add(sensorData.dynamicAdvanceMultiplier)
 
                     val fineKnock = MonitoredNumericSensor(
                         sensorData.fineKnock, when {
@@ -118,20 +124,17 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                             coolantTemp,
                             boostPressure,
                             dynamicAdvanceMultiplier,
+                            damHistory.get(),
                             fineKnock,
                             feedbackKnock,
                             afLearn,
 
                             engineRpm,
                             engineLoad,
-                            throttlePosition
+                            throttlePosition,
                         )
                     )
                 }
-
-            monitoredSensorDataFlow.debounce(10_000).collect {
-
-            }
 
             monitoredSensorDataFlow
                 .collect { monitoredSensorData ->
