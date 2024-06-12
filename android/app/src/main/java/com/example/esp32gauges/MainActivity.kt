@@ -31,9 +31,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.room.Room
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.esp32.SensorDataRepository
+import com.example.esp32gauges.esp32.SensorDatabase
 import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
@@ -58,6 +60,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val db = Room.databaseBuilder(
+            applicationContext,
+            SensorDatabase::class.java, "sensor-database"
+        ).build()
 
         setContent {
             ESP32GaugesTheme {

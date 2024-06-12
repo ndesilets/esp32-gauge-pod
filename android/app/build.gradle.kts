@@ -68,4 +68,8 @@ dependencies {
     implementation(libs.vico.compose.m3)
     implementation(libs.vico.core)
     implementation(libs.vico.views)
+
+    implementation(libs.room.runtime)
+    annotationProcessor(libs.room.compiler)
+    implementation(libs.room.ktx)
 }

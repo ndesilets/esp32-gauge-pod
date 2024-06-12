@@ -1,6 +1,6 @@
 package com.example.esp32gauges.esp32
 
-import com.example.esp32gauges.models.SensorData
+import com.example.esp32gauges.models.SensorDataEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -14,9 +14,11 @@ class MockedESP32DataSource : ESP32DataSourceI {
         return ((sin(phase) * 0.5 + 0.5) * (max - min) + min).toFloat()
     }
 
-    override fun streamSensorData(): Flow<SensorData> = flow {
+    override fun streamSensorData(): Flow<SensorDataEvent> = flow {
         while (true) {
-            val sensorData = SensorData(
+            val sensorDataEvent = SensorDataEvent(
+                timestamp = System.currentTimeMillis(),
+
                 oilPressure = generateValue(phase, 0f, 100f),
                 oilTemp = generateValue(phase, -20f, 300f),
                 coolantTemp = generateValue(phase, -20f, 300f),
@@ -32,7 +34,7 @@ class MockedESP32DataSource : ESP32DataSourceI {
                 throttlePosition = generateValue(phase, 0f, 100f)
             )
 
-            emit(sensorData)
+            emit(sensorDataEvent)
             phase += 0.01
             delay(33)
         }
