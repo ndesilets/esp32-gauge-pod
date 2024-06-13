@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.room.Room
 import com.example.esp32gauges.composables.BarGauge
+import com.example.esp32gauges.daos.MockSensorDataEventDao
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.esp32.SensorDataRepository
 import com.example.esp32gauges.esp32.SensorDatabase
@@ -56,15 +57,15 @@ import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
-    private val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val db = Room.databaseBuilder(
-            applicationContext,
-            SensorDatabase::class.java, "sensor-database"
-        ).build()
+        val dataSource = MockedESP32DataSource()
+        val sensorDatabase = Room.databaseBuilder(applicationContext, SensorDatabase::class.java, "sensor-database").build()
+        val dataRepository = SensorDataRepository(dataSource, sensorDatabase.sensorDataEventDao())
+        val viewModel = MainViewModel(dataRepository)
 
         setContent {
             ESP32GaugesTheme {
@@ -102,7 +103,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
         )
 
-        Divider(modifier.padding(vertical = 32.dp))
+        HorizontalDivider(modifier.padding(vertical = 32.dp))
 
         Column(
             modifier = modifier.fillMaxWidth(),
@@ -191,7 +192,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 @Preview(widthDp = 480, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardPreview() {
-    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource(), MockSensorDataEventDao()))
 
     ESP32GaugesTheme {
         Surface() {
@@ -264,7 +265,7 @@ fun SensorIndicatorOverview(sensors: MonitoredSensorData, modifier: Modifier = M
 @Preview(heightDp = 120, widthDp = 480, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun SensorIndicatorOverviewPreview() {
-    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource()))
+    val viewModel = MainViewModel(SensorDataRepository(MockedESP32DataSource(), MockSensorDataEventDao()))
     val uiState = viewModel.uiState.collectAsState()
     val sensors = uiState.value.monitoredSensorData
 
