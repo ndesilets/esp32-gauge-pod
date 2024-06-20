@@ -1,11 +1,11 @@
-package com.example.esp32gauges.esp32
+package com.example.esp32gauges.repositories
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.example.esp32gauges.daos.SensorDataEventDao
-import com.example.esp32gauges.models.SensorDataEvent
+import com.example.esp32gauges.models.OBDIISensorDataEvent
 
-@Database(entities = [SensorDataEvent::class], version = 1)
+@Database(entities = [OBDIISensorDataEvent::class], version = 1)
 abstract class SensorDatabase: RoomDatabase() {
     abstract fun sensorDataEventDao(): SensorDataEventDao
 }

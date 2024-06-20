@@ -14,12 +14,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -35,8 +33,8 @@ import androidx.room.Room
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.daos.MockSensorDataEventDao
 import com.example.esp32gauges.esp32.MockedESP32DataSource
-import com.example.esp32gauges.esp32.SensorDataRepository
-import com.example.esp32gauges.esp32.SensorDatabase
+import com.example.esp32gauges.repositories.SensorDataRepository
+import com.example.esp32gauges.repositories.SensorDatabase
 import com.example.esp32gauges.models.MonitoredSensorData
 import com.example.esp32gauges.sensors.status.NumericStatus
 import com.example.esp32gauges.sensors.status.PressureStatus
@@ -52,9 +50,6 @@ import com.patrykandpatrick.vico.core.chart.values.AxisValueOverrider
 import com.patrykandpatrick.vico.core.component.shape.shader.DynamicShaders
 import com.patrykandpatrick.vico.core.model.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.model.lineSeries
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
 
@@ -63,7 +58,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val dataSource = MockedESP32DataSource()
-        val sensorDatabase = Room.databaseBuilder(applicationContext, SensorDatabase::class.java, "sensor-database").build()
+        val sensorDatabase = Room.inMemoryDatabaseBuilder(applicationContext, SensorDatabase::class.java).build()
         val dataRepository = SensorDataRepository(dataSource, sensorDatabase.sensorDataEventDao())
         val viewModel = MainViewModel(dataRepository)
 
@@ -78,7 +73,6 @@ class MainActivity : ComponentActivity() {
 }
 
 //
-
 
 private val WHITE = Color(0xFFFFFFFF)
 
@@ -98,7 +92,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
     ) {
-        SensorIndicatorOverview(
+        SensorStatusBar(
             sensors, modifier = Modifier
                 .fillMaxWidth()
         )
@@ -204,7 +198,7 @@ fun DashboardPreview() {
 //
 
 @Composable
-fun SensorIndicatorOverview(sensors: MonitoredSensorData, modifier: Modifier = Modifier) {
+fun SensorStatusBar(sensors: MonitoredSensorData, modifier: Modifier = Modifier) {
 //    Log.d("sensors: %s", sensors.toString())
 
     Column(modifier) {
@@ -271,7 +265,7 @@ fun SensorIndicatorOverviewPreview() {
 
     ESP32GaugesTheme {
         Surface() {
-            SensorIndicatorOverview(sensors)
+            SensorStatusBar(sensors)
         }
     }
 }

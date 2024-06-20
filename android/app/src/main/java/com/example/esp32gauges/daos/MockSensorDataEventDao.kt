@@ -1,22 +1,21 @@
 package com.example.esp32gauges.daos
 
-import android.util.Log
-import com.example.esp32gauges.models.SensorDataEvent
+import com.example.esp32gauges.models.OBDIISensorDataEvent
 
 class MockSensorDataEventDao : SensorDataEventDao {
-    private val events = mutableListOf<SensorDataEvent>()
+    private val events = mutableListOf<OBDIISensorDataEvent>()
 
-    override fun getLatest(): SensorDataEvent {
+    override fun getLatest(): OBDIISensorDataEvent {
         return events.maxByOrNull { it.timestamp }
             ?: throw NoSuchElementException("No data available")
     }
 
-    override fun getLastNMillis(timeLimit: Long): List<SensorDataEvent> {
+    override fun getLastNMillis(timeLimit: Long): List<OBDIISensorDataEvent> {
         val currentTime = System.currentTimeMillis()
         return events.filter { it.timestamp >= currentTime - timeLimit }.sortedBy { it.timestamp }
     }
 
-    override fun insert(sensorDataEvent: SensorDataEvent) {
-        events.add(sensorDataEvent)
+    override fun insert(OBDIISensorDataEvent: OBDIISensorDataEvent) {
+        events.add(OBDIISensorDataEvent)
     }
 }

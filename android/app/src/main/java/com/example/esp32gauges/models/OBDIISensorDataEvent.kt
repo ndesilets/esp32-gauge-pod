@@ -5,12 +5,14 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "sensor_data_event")
-data class SensorDataEvent (
+data class OBDIISensorDataEvent (
     @PrimaryKey val timestamp: Long,
 
     @ColumnInfo(name = "oil_pressure") val oilPressure: Float,
     @ColumnInfo(name = "oil_temp") val oilTemp: Float,
     @ColumnInfo(name = "coolant_temp") val coolantTemp: Float,
+
+    @ColumnInfo(name = "air_fuel_ratio") val airFuelRatio: Float,
     @ColumnInfo(name = "boost_pressure") val boostPressure: Float,
 
     @ColumnInfo(name = "dynamic_advance_multiplier") val dynamicAdvanceMultiplier: Float,
