@@ -22,14 +22,18 @@ class MockedESP32DataSource : ESP32DataSourceI {
                 oilPressure = generateValue(phase, 0f, 100f),
                 oilTemp = generateValue(phase, -20f, 300f),
                 coolantTemp = generateValue(phase, -20f, 300f),
+                fuelPressure = generateValue(phase, 0f, 60f),
+                ethanolContent = generateValue(phase, 0f, 100f),
 
                 airFuelRatio = generateValue(phase, 10.8f, 20f),
                 boostPressure = generateValue(phase, -14f, 23f),
 
                 dynamicAdvanceMultiplier = generateValue(phase, 0f, 1f),
-                fineKnock = generateValue(phase, -4f, 0f),
+                fineKnockLearn = generateValue(phase, -4f, 0f),
                 feedbackKnock = generateValue(phase, -4f, 0f),
+                afCorrection = generateValue(phase, -20f, 20f),
                 afLearn = generateValue(phase, -20f, 20f),
+                afRatio = generateValue(phase, 8.0f, 20f),
 
                 engineRpm = generateValue(phase, 0f, 7000f),
                 engineLoad = generateValue(phase, 0f, 100f),

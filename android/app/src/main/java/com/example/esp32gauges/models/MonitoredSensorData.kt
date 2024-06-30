@@ -9,6 +9,9 @@ data class MonitoredSensorData(
     val oilPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
     val oilTemp: MonitoredTempSensor = MonitoredTempSensor(),
     val coolantTemp: MonitoredTempSensor = MonitoredTempSensor(),
+    val fuelPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
+    val fuelPressureHistory: List<Float> = listOf(),
+    val ethanolContent: SupplementalNumericSensor = SupplementalNumericSensor(),
     val boostPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
 
     val dynamicAdvanceMultiplier: MonitoredNumericSensor = MonitoredNumericSensor(),
@@ -16,7 +19,9 @@ data class MonitoredSensorData(
 
     val fineKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
     val feedbackKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
+    val afCorrection: MonitoredNumericSensor = MonitoredNumericSensor(),
     val afLearn: MonitoredNumericSensor = MonitoredNumericSensor(),
+    val afRatio: MonitoredNumericSensor = MonitoredNumericSensor(),
 
     val engineRpm: SupplementalNumericSensor = SupplementalNumericSensor(),
     val engineLoad: SupplementalNumericSensor = SupplementalNumericSensor(),

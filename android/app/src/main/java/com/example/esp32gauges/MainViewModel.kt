@@ -29,6 +29,7 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
+    val fuelPressureHistory = CircularBuffer<Float>(30)
     val damHistory = CircularBuffer<Float>(30)
 
     init {
@@ -69,6 +70,18 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                         }
                     )
 
+                    val fuelPressure = MonitoredPressureSensor(
+                        sensorData.fuelPressure, when {
+                            sensorData.fuelPressure < 30 -> PressureStatus.CRITICAL
+                            else -> PressureStatus.OK
+                        }
+                    )
+                    fuelPressureHistory.add(sensorData.fuelPressure)
+
+                    val ethanolContent = SupplementalNumericSensor(
+                        sensorData.ethanolContent
+                    )
+
                     val boostPressure = MonitoredPressureSensor(
                         sensorData.boostPressure, when {
                             sensorData.boostPressure < 20.5 -> PressureStatus.OK
@@ -86,8 +99,8 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                     damHistory.add(sensorData.dynamicAdvanceMultiplier)
 
                     val fineKnock = MonitoredNumericSensor(
-                        sensorData.fineKnock, when {
-                            sensorData.fineKnock < 0 -> NumericStatus.CRITICAL
+                        sensorData.fineKnockLearn, when {
+                            sensorData.fineKnockLearn < 0 -> NumericStatus.CRITICAL
                             else -> NumericStatus.OK
                         }
                     )
@@ -100,12 +113,25 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                         }
                     )
 
+                    val afCorrection = MonitoredNumericSensor(
+                        sensorData.afCorrection, when {
+                            abs(sensorData.afCorrection) < 8 -> NumericStatus.OK
+                            abs(sensorData.afCorrection) < 10 -> NumericStatus.WARN
+                            else -> NumericStatus.CRITICAL
+                        }
+                    )
+
                     val afLearn = MonitoredNumericSensor(
                         sensorData.afLearn, when {
                             abs(sensorData.afLearn) < 8 -> NumericStatus.OK
                             abs(sensorData.afLearn) < 10 -> NumericStatus.WARN
                             else -> NumericStatus.CRITICAL
                         }
+                    )
+
+                    // TODO
+                    val afRatio = MonitoredNumericSensor(
+                        sensorData.afRatio, NumericStatus.OK
                     )
 
                     // supplemental
@@ -119,12 +145,19 @@ class MainViewModel(private val repository: SensorDataRepository) : ViewModel() 
                             oilPressure,
                             oilTemp,
                             coolantTemp,
+                            fuelPressure,
+                            fuelPressureHistory.get(),
+                            ethanolContent = ethanolContent,
+
                             boostPressure,
                             dynamicAdvanceMultiplier,
                             damHistory.get(),
+
                             fineKnock,
                             feedbackKnock,
+                            afCorrection = afCorrection,
                             afLearn,
+                            afRatio,
 
                             engineRpm,
                             engineLoad,
