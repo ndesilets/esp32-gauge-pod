@@ -80,7 +80,8 @@ fun BarGauge(
                     strokeWidth = 2f
                 )
 
-                val textLayoutResult = textMeasurer.measure(detents[i].toInt().toString(), textStyle)
+                val textLayoutResult =
+                    textMeasurer.measure(detents[i].toInt().toString(), textStyle)
 
                 val offset = when (detents[i]) {
                     minVal -> {
@@ -92,7 +93,10 @@ fun BarGauge(
                     }
 
                     else -> {
-                        Offset(detentX - textLayoutResult.size.width / 2, detentHeight + 2.dp.toPx())
+                        Offset(
+                            detentX - textLayoutResult.size.width / 2,
+                            detentHeight + 2.dp.toPx()
+                        )
                     }
                 }
 
@@ -109,7 +113,7 @@ fun BarGaugePreview() {
         minVal = -20f,
         maxVal = 300f,
         currentVal = 60f,
-        detents = listOf(-20f, 0f, 32f, 100f,180f, 230f, 300f),
+        detents = listOf(-20f, 0f, 32f, 100f, 180f, 230f, 300f),
         modifier = Modifier
     )
 }

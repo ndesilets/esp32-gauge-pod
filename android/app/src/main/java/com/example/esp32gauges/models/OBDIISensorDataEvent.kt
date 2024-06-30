@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "sensor_data_event")
-data class OBDIISensorDataEvent (
+data class OBDIISensorDataEvent(
     @PrimaryKey val timestamp: Long,
 
     @ColumnInfo(name = "oil_pressure") val oilPressure: Float,

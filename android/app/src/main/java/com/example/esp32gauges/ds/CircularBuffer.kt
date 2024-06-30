@@ -12,6 +12,6 @@ class CircularBuffer<T>(private val capacity: Int) {
     }
 
     fun get(): List<T> {
-        return  buffer.toList()
+        return buffer.toList()
     }
 }

@@ -3,8 +3,8 @@ package com.example.esp32gauges
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.esp32gauges.ds.CircularBuffer
-import com.example.esp32gauges.repositories.SensorDataRepository
 import com.example.esp32gauges.models.MonitoredSensorData
+import com.example.esp32gauges.repositories.SensorDataRepository
 import com.example.esp32gauges.sensors.MonitoredNumericSensor
 import com.example.esp32gauges.sensors.MonitoredPressureSensor
 import com.example.esp32gauges.sensors.MonitoredTempSensor
