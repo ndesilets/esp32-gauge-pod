@@ -12,7 +12,7 @@ data class MonitoredSensorData(
     val fuelPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
     val boostPressure: MonitoredPressureSensor = MonitoredPressureSensor(),
     val dynamicAdvanceMultiplier: MonitoredNumericSensor = MonitoredNumericSensor(),
-    val fineKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
+    val fineKnockLearn: MonitoredNumericSensor = MonitoredNumericSensor(),
     val feedbackKnock: MonitoredNumericSensor = MonitoredNumericSensor(),
     val afCorrection: MonitoredNumericSensor = MonitoredNumericSensor(),
     val afLearn: MonitoredNumericSensor = MonitoredNumericSensor(),
