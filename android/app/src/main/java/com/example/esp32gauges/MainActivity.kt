@@ -12,6 +12,7 @@ import androidx.room.Room
 import com.example.esp32gauges.esp32.MockedESP32DataSource
 import com.example.esp32gauges.repositories.SensorDataRepository
 import com.example.esp32gauges.repositories.SensorDatabase
+import com.example.esp32gauges.services.MonitoringService
 import com.example.esp32gauges.ui.theme.ESP32GaugesTheme
 import com.example.esp32gauges.views.Dashboard
 
@@ -25,15 +26,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val dataSource = MockedESP32DataSource()
+        val sensorDataSource = MockedESP32DataSource()
         val sensorDatabase =
             Room.inMemoryDatabaseBuilder(applicationContext, SensorDatabase::class.java).build()
-        val dataRepository = SensorDataRepository(dataSource, sensorDatabase.sensorDataEventDao())
-        val viewModel = MainViewModel(dataRepository)
+
+        val dataRepository = SensorDataRepository(sensorDataSource, sensorDatabase.sensorDataEventDao())
+        val monitoringService = MonitoringService(dataRepository)
+        monitoringService.startMonitoring()
+
+        val viewModel = MainViewModel(monitoringService)
 
         setContent {
             ESP32GaugesTheme {
-                Surface() {
+                Surface {
                     Dashboard(viewModel)
                 }
             }

@@ -2,174 +2,33 @@ package com.example.esp32gauges
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.esp32gauges.ds.CircularBuffer
 import com.example.esp32gauges.models.MonitoredSensorData
-import com.example.esp32gauges.repositories.SensorDataRepository
-import com.example.esp32gauges.sensors.MonitoredNumericSensor
-import com.example.esp32gauges.sensors.MonitoredPressureSensor
-import com.example.esp32gauges.sensors.MonitoredTempSensor
-import com.example.esp32gauges.sensors.SupplementalNumericSensor
-import com.example.esp32gauges.sensors.status.NumericStatus
-import com.example.esp32gauges.sensors.status.PressureStatus
-import com.example.esp32gauges.sensors.status.TempStatus
+import com.example.esp32gauges.services.MonitoringService
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 data class MainUiState(
     val monitoredSensorData: MonitoredSensorData = MonitoredSensorData()
 )
 
-class MainViewModel(private val repository: SensorDataRepository) : ViewModel() {
+class MainViewModel(private val monitoringService: MonitoringService) : ViewModel() {
     // expose screen ui state
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
-
-    val fuelPressureHistory = CircularBuffer<Float>(30)
-    val damHistory = CircularBuffer<Float>(30)
 
     init {
         monitorSensorData()
     }
 
     // handle business logic
-    @OptIn(FlowPreview::class)
     private fun monitorSensorData() {
         viewModelScope.launch {
-            val monitoredSensorDataFlow = repository.getSensorDataStream()
-                .transform { sensorData ->
-                    // monitored
-
-                    val oilPressure = MonitoredPressureSensor(
-                        sensorData.oilPressure, when {
-                            sensorData.engineRpm < 500 -> PressureStatus.OK // ignore if engine is off
-                            sensorData.oilPressure < 10 -> PressureStatus.CRITICAL
-                            else -> PressureStatus.OK
-                        }
-                    )
-
-                    val oilTemp = MonitoredTempSensor(
-                        sensorData.oilTemp, when {
-                            sensorData.oilTemp < 170 -> TempStatus.COLD
-                            sensorData.oilTemp < 240 -> TempStatus.OK
-                            sensorData.oilTemp < 250 -> TempStatus.HOT
-                            else -> TempStatus.CRITICAL
-                        }
-                    )
-
-                    val coolantTemp = MonitoredTempSensor(
-                        sensorData.coolantTemp, when {
-                            sensorData.coolantTemp < 170 -> TempStatus.COLD
-                            sensorData.coolantTemp < 220 -> TempStatus.OK
-                            sensorData.coolantTemp < 230 -> TempStatus.HOT
-                            else -> TempStatus.CRITICAL
-                        }
-                    )
-
-                    val fuelPressure = MonitoredPressureSensor(
-                        sensorData.fuelPressure, when {
-                            sensorData.fuelPressure < 30 -> PressureStatus.CRITICAL
-                            else -> PressureStatus.OK
-                        }
-                    )
-                    fuelPressureHistory.add(sensorData.fuelPressure)
-
-                    val ethanolContent = SupplementalNumericSensor(
-                        sensorData.ethanolContent
-                    )
-
-                    val boostPressure = MonitoredPressureSensor(
-                        sensorData.boostPressure, when {
-                            sensorData.boostPressure < 20.5 -> PressureStatus.OK
-                            sensorData.boostPressure < 21.5 -> PressureStatus.HIGH
-                            else -> PressureStatus.CRITICAL // excess boost creep
-                        }
-                    )
-
-                    val dynamicAdvanceMultiplier = MonitoredNumericSensor(
-                        sensorData.dynamicAdvanceMultiplier, when {
-                            sensorData.dynamicAdvanceMultiplier < 1.0 -> NumericStatus.OK
-                            else -> NumericStatus.OK
-                        }
-                    )
-                    damHistory.add(sensorData.dynamicAdvanceMultiplier)
-
-                    val fineKnock = MonitoredNumericSensor(
-                        sensorData.fineKnockLearn, when {
-                            sensorData.fineKnockLearn < 0 -> NumericStatus.CRITICAL
-                            else -> NumericStatus.OK
-                        }
-                    )
-
-                    val feedbackKnock = MonitoredNumericSensor(
-                        sensorData.feedbackKnock, when {
-                            sensorData.feedbackKnock < -1.4 -> NumericStatus.CRITICAL
-                            sensorData.feedbackKnock < 0 -> NumericStatus.WARN
-                            else -> NumericStatus.OK
-                        }
-                    )
-
-                    val afCorrection = MonitoredNumericSensor(
-                        sensorData.afCorrection, when {
-                            abs(sensorData.afCorrection) < 8 -> NumericStatus.OK
-                            abs(sensorData.afCorrection) < 10 -> NumericStatus.WARN
-                            else -> NumericStatus.CRITICAL
-                        }
-                    )
-
-                    val afLearn = MonitoredNumericSensor(
-                        sensorData.afLearn, when {
-                            abs(sensorData.afLearn) < 8 -> NumericStatus.OK
-                            abs(sensorData.afLearn) < 10 -> NumericStatus.WARN
-                            else -> NumericStatus.CRITICAL
-                        }
-                    )
-
-                    // TODO
-                    val afRatio = MonitoredNumericSensor(
-                        sensorData.afRatio, NumericStatus.OK
-                    )
-
-                    // supplemental
-
-                    val engineRpm = SupplementalNumericSensor(sensorData.engineRpm)
-                    val engineLoad = SupplementalNumericSensor(sensorData.engineLoad)
-                    val throttlePosition = SupplementalNumericSensor(sensorData.throttlePosition)
-
-                    emit(
-                        MonitoredSensorData(
-                            oilPressure,
-                            oilTemp,
-                            coolantTemp,
-                            fuelPressure,
-                            fuelPressureHistory.get(),
-                            ethanolContent = ethanolContent,
-
-                            boostPressure,
-                            dynamicAdvanceMultiplier,
-                            damHistory.get(),
-
-                            fineKnock,
-                            feedbackKnock,
-                            afCorrection = afCorrection,
-                            afLearn,
-                            afRatio,
-
-                            engineRpm,
-                            engineLoad,
-                            throttlePosition,
-                        )
-                    )
-                }
-
-            monitoredSensorDataFlow
-                .collect { monitoredSensorData ->
-                    _uiState.value = _uiState.value.copy(monitoredSensorData = monitoredSensorData)
-                }
+            monitoringService.monitored.collect { monitored ->
+                _uiState.value = _uiState.value.copy(monitoredSensorData = monitored)
+            }
         }
     }
 }

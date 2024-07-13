@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class SensorDataRepository(
     private val dataSource: ESP32DataSourceI,
-    private val sensorDataEventDao: SensorDataEventDao
+    private val sensorDataEventDao: SensorDataEventDao,
 ) {
     fun getSensorDataStream(): Flow<OBDIISensorDataEvent> = dataSource.streamSensorData()
         .onEach { sensorDataEvent ->
