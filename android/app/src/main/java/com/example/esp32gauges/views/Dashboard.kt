@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.example.esp32gauges.MainViewModel
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.composables.HistoryNumericGauge
+import com.example.esp32gauges.composables.MinMaxNumericGauge
 import com.example.esp32gauges.composables.SimpleNumericGauge
 import com.example.esp32gauges.repositories.daos.MockSensorDataEventDao
 import com.example.esp32gauges.esp32.MockedESP32DataSource
@@ -150,58 +152,39 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         ) {
             Row(modifier = modifier
                 .fillMaxWidth()
+                .height(100.dp)
                 .padding(vertical = 8.dp)) {
-                HistoryNumericGauge(
+                MinMaxNumericGauge(
                     title = "FB Knock",
                     curVal = sensors.feedbackKnock.value,
-                    oneMinuteMin = 0f,
-                    oneMinuteMax = 0f,
-                    fifteenMinuteMin = 0f,
-                    fifteenMinuteMax = 0f,
-                    sessionMin = 0f,
-                    sessionMax = 0f,
-
+                    minVal = sensors.feedbackKnock.summary.minSession,
+                    maxVal = sensors.feedbackKnock.summary.maxSession,
                     modifier = modifier.weight(1f)
                 )
-                HistoryNumericGauge(
+                MinMaxNumericGauge(
                     title = "Oil P",
                     curVal = sensors.oilPressure.value,
-                    oneMinuteMin = 0f,
-                    oneMinuteMax = 0f,
-                    fifteenMinuteMin = 0f,
-                    fifteenMinuteMax = 0f,
-                    sessionMin = 0f,
-                    sessionMax = 0f,
-
+                    minVal = sensors.oilPressure.summary.minSession,
+                    maxVal = sensors.oilPressure.summary.maxSession,
                     modifier = modifier.weight(1f)
                 )
             }
             Row(modifier = modifier
                 .fillMaxWidth()
+                .height(100.dp)
                 .padding(vertical = 8.dp)) {
-
-                HistoryNumericGauge(
+                MinMaxNumericGauge(
                     title = "AF Ratio",
                     curVal = sensors.afRatio.value,
-                    oneMinuteMin = 0f,
-                    oneMinuteMax = 0f,
-                    fifteenMinuteMin = 0f,
-                    fifteenMinuteMax = 0f,
-                    sessionMin = 0f,
-                    sessionMax = 0f,
-
+                    minVal = sensors.afRatio.summary.minSession,
+                    maxVal = sensors.afRatio.summary.maxSession,
                     modifier = modifier.weight(1f)
                 )
-                HistoryNumericGauge(
+                MinMaxNumericGauge(
                     title = "Fuel P",
                     curVal = sensors.fuelPressure.value,
-                    oneMinuteMin = 0f,
-                    oneMinuteMax = 0f,
-                    fifteenMinuteMin = 0f,
-                    fifteenMinuteMax = 0f,
-                    sessionMin = 0f,
-                    sessionMax = 0f,
-
+                    minVal = sensors.fuelPressure.summary.minSession,
+                    maxVal = sensors.fuelPressure.summary.maxSession,
                     modifier = modifier.weight(1f)
                 )
             }
