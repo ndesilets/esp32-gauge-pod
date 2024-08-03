@@ -22,7 +22,7 @@ class SensorDataRepository(
     fun getSensorDataStream(): Flow<OBDIISensorDataEvent> = dataSource.streamSensorData()
         .onEach { sensorDataEvent ->
             CoroutineScope(Dispatchers.IO).launch {
-                sensorDataEventDao.insert(sensorDataEvent)
+//                sensorDataEventDao.insert(sensorDataEvent)
             }
         }
 }
