@@ -1,4 +1,4 @@
-package com.example.esp32gauges.daos
+package com.example.esp32gauges.repositories.daos
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -7,10 +7,10 @@ import com.example.esp32gauges.models.OBDIISensorDataEvent
 
 @Dao
 interface SensorDataEventDao {
-    @Query("SELECT * FROM sensor_data_event ORDER BY timestamp LIMIT 1")
+    @Query("select * from sensor_data_event order by timestamp limit 1")
     fun getLatest(): OBDIISensorDataEvent
 
-    @Query("SELECT * FROM sensor_data_event WHERE timestamp >= :timeLimit ORDER BY timestamp")
+    @Query("select * from sensor_data_event where timestamp >= :timeLimit order by timestamp")
     fun getLastNMillis(timeLimit: Long): List<OBDIISensorDataEvent>
 
     @Insert

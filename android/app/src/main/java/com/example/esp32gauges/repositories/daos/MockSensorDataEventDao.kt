@@ -1,4 +1,4 @@
-package com.example.esp32gauges.daos
+package com.example.esp32gauges.repositories.daos
 
 import com.example.esp32gauges.models.OBDIISensorDataEvent
 
