@@ -1,6 +1,5 @@
 package com.example.esp32gauges.composables
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,25 +8,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
-import androidx.compose.ui.unit.sp
+import com.example.esp32gauges.models.sensors.MonitoredNumericSensor
 
 @Composable
 fun AirFuelFunLand(
-    afCorrectionCurVal: Float,
-    afCorrectionMinVal: Float,
-    afCorrectionMaxVal: Float,
-    afLearnCurVal: Float,
-    afLearnMinVal: Float,
-    afLearnMaxVal: Float,
-    afRatioCurVal: Float,
-    afRatioMinVal: Float,
-    afRatioMaxVal: Float,
+    afCorrection: MonitoredNumericSensor,
+    afLearn: MonitoredNumericSensor,
+    afRatio: MonitoredNumericSensor,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -42,30 +31,30 @@ fun AirFuelFunLand(
         ) {
             MinMaxNumericGauge(
                 title = "S. Trim",
-                curVal = afCorrectionCurVal,
-                minVal = afCorrectionMinVal,
-                maxVal = afCorrectionMaxVal,
+                curVal = afCorrection.value,
+                minVal = afCorrection.summary.minSession,
+                maxVal = afCorrection.summary.maxSession,
                 modifier = modifier.weight(1f)
             )
             MinMaxNumericGauge(
                 title = "L. Trim",
-                curVal = afLearnCurVal,
-                minVal = afLearnMinVal,
-                maxVal = afLearnMaxVal,
+                curVal = afLearn.value,
+                minVal = afLearn.summary.minSession,
+                maxVal = afLearn.summary.maxSession,
                 modifier = modifier.weight(1f)
             )
             SimpleNumericGauge(
                 title = "Trim Sum",
-                curVal = afCorrectionCurVal + afLearnCurVal,
+                curVal = afCorrection.value + afLearn.value,
                 modifier = modifier
                     .weight(1f)
                     .align(Alignment.Top)
             )
             MinMaxNumericGauge(
                 title = "AFR",
-                curVal = afRatioCurVal,
-                minVal = afRatioMinVal,
-                maxVal = afRatioMaxVal,
+                curVal = afRatio.value,
+                minVal = afRatio.summary.minSession,
+                maxVal = afRatio.summary.maxSession,
                 modifier = modifier.weight(1f)
             )
         }
@@ -76,15 +65,9 @@ fun AirFuelFunLand(
 @Composable
 fun AirFuelFunLandPreview() {
     AirFuelFunLand(
-        afCorrectionCurVal = 0.0f,
-        afCorrectionMinVal = 0.0f,
-        afCorrectionMaxVal = 0.0f,
-        afLearnCurVal = 0.0f,
-        afLearnMinVal = 0.0f,
-        afLearnMaxVal = 0.0f,
-        afRatioCurVal = 0.0f,
-        afRatioMinVal = 0.0f,
-        afRatioMaxVal = 0.0f,
+        afCorrection = MonitoredNumericSensor(),
+        afLearn = MonitoredNumericSensor(),
+        afRatio = MonitoredNumericSensor(),
         modifier = Modifier
     )
 }

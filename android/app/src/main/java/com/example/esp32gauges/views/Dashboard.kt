@@ -138,30 +138,18 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
         Box(modifier = modifier.padding(vertical = 16.dp)){
             AirFuelFunLand(
                 modifier = modifier.height(120.dp),
-                afCorrectionCurVal = sensors.afCorrection.value,
-                afCorrectionMinVal = sensors.afCorrection.summary.minSession,
-                afCorrectionMaxVal = sensors.afCorrection.summary.maxSession,
-                afLearnCurVal = sensors.afLearn.value,
-                afLearnMinVal = sensors.afLearn.summary.minSession,
-                afLearnMaxVal = sensors.afLearn.summary.maxSession,
-                afRatioCurVal = sensors.afRatio.value,
-                afRatioMinVal = sensors.afRatio.summary.minSession,
-                afRatioMaxVal = sensors.afRatio.summary.maxSession
+                afCorrection = sensors.afCorrection,
+                afLearn = sensors.afLearn,
+                afRatio = sensors.afRatio,
             )
         }
 
         Box(modifier = modifier.padding(vertical = 16.dp)){
             KnockFunLand(
                 modifier = modifier.height(120.dp),
-                damCurVal = sensors.afCorrection.value,
-                damMinVal = sensors.afCorrection.summary.minSession,
-                damMaxVal = sensors.afCorrection.summary.maxSession,
-                afCorrectionCurVal = sensors.afCorrection.value,
-                afCorrectionMinVal = sensors.afCorrection.summary.minSession,
-                afCorrectionMaxVal = sensors.afCorrection.summary.maxSession,
-                afLearnCurVal = sensors.afLearn.value,
-                afLearnMinVal = sensors.afLearn.summary.minSession,
-                afLearnMaxVal = sensors.afLearn.summary.maxSession,
+                dam = sensors.afCorrection,
+                afCorrection = sensors.afCorrection,
+                afLearn = sensors.afLearn,
             )
         }
 
