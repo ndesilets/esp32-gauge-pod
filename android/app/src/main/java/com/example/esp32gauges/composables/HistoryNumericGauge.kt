@@ -31,7 +31,7 @@ fun HistoryNumericGauge(
     Column(
         modifier = modifier.height(120.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         Text(title)
         Text(

@@ -1,6 +1,7 @@
 package com.example.esp32gauges.views
 
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,8 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.esp32gauges.MainViewModel
+import com.example.esp32gauges.composables.AirFuelFunLand
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.composables.HistoryNumericGauge
+import com.example.esp32gauges.composables.KnockFunLand
+import com.example.esp32gauges.composables.KnockFunLandPreview
 import com.example.esp32gauges.composables.MinMaxNumericGauge
 import com.example.esp32gauges.composables.SimpleNumericGauge
 import com.example.esp32gauges.repositories.daos.MockSensorDataEventDao
@@ -118,32 +122,47 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row {
-                SimpleNumericGauge(
-                    title = "DAM",
-                    curVal = sensors.dynamicAdvanceMultiplier.value,
-                    modifier = modifier.weight(1f)
-                )
-                SimpleNumericGauge(
-                    title = "FKL",
-                    curVal = sensors.fineKnockLearn.value,
-                    modifier = modifier.weight(1f)
-                )
+//                SimpleNumericGauge(
+//                    title = "IAT",
+//                    curVal = sensors.intakeAirTemperature.value,
+//                    modifier = modifier.weight(1f)
+//                )
                 SimpleNumericGauge(
                     title = "ETH",
                     curVal = sensors.ethanolContent.value,
                     modifier = modifier.weight(1f)
                 )
-                SimpleNumericGauge(
-                    title = "AFC",
-                    curVal = sensors.afCorrection.value,
-                    modifier = modifier.weight(1f)
-                )
-                SimpleNumericGauge(
-                    title = "AFL",
-                    curVal = sensors.afLearn.value,
-                    modifier = modifier.weight(1f)
-                )
             }
+        }
+
+        Box(modifier = modifier.padding(vertical = 16.dp)){
+            AirFuelFunLand(
+                modifier = modifier.height(120.dp),
+                afCorrectionCurVal = sensors.afCorrection.value,
+                afCorrectionMinVal = sensors.afCorrection.summary.minSession,
+                afCorrectionMaxVal = sensors.afCorrection.summary.maxSession,
+                afLearnCurVal = sensors.afLearn.value,
+                afLearnMinVal = sensors.afLearn.summary.minSession,
+                afLearnMaxVal = sensors.afLearn.summary.maxSession,
+                afRatioCurVal = sensors.afRatio.value,
+                afRatioMinVal = sensors.afRatio.summary.minSession,
+                afRatioMaxVal = sensors.afRatio.summary.maxSession
+            )
+        }
+
+        Box(modifier = modifier.padding(vertical = 16.dp)){
+            KnockFunLand(
+                modifier = modifier.height(120.dp),
+                damCurVal = sensors.afCorrection.value,
+                damMinVal = sensors.afCorrection.summary.minSession,
+                damMaxVal = sensors.afCorrection.summary.maxSession,
+                afCorrectionCurVal = sensors.afCorrection.value,
+                afCorrectionMinVal = sensors.afCorrection.summary.minSession,
+                afCorrectionMaxVal = sensors.afCorrection.summary.maxSession,
+                afLearnCurVal = sensors.afLearn.value,
+                afLearnMinVal = sensors.afLearn.summary.minSession,
+                afLearnMaxVal = sensors.afLearn.summary.maxSession,
+            )
         }
 
         Column(
@@ -155,32 +174,6 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 .height(100.dp)
                 .padding(vertical = 8.dp)) {
                 MinMaxNumericGauge(
-                    title = "FB Knock",
-                    curVal = sensors.feedbackKnock.value,
-                    minVal = sensors.feedbackKnock.summary.minSession,
-                    maxVal = sensors.feedbackKnock.summary.maxSession,
-                    modifier = modifier.weight(1f)
-                )
-                MinMaxNumericGauge(
-                    title = "Oil P",
-                    curVal = sensors.oilPressure.value,
-                    minVal = sensors.oilPressure.summary.minSession,
-                    maxVal = sensors.oilPressure.summary.maxSession,
-                    modifier = modifier.weight(1f)
-                )
-            }
-            Row(modifier = modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .padding(vertical = 8.dp)) {
-                MinMaxNumericGauge(
-                    title = "AF Ratio",
-                    curVal = sensors.afRatio.value,
-                    minVal = sensors.afRatio.summary.minSession,
-                    maxVal = sensors.afRatio.summary.maxSession,
-                    modifier = modifier.weight(1f)
-                )
-                MinMaxNumericGauge(
                     title = "Fuel P",
                     curVal = sensors.fuelPressure.value,
                     minVal = sensors.fuelPressure.summary.minSession,
@@ -188,6 +181,12 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     modifier = modifier.weight(1f)
                 )
             }
+//            Row(modifier = modifier
+//                .fillMaxWidth()
+//                .height(100.dp)
+//                .padding(vertical = 8.dp)) {
+//
+//            }
         }
     }
 }
