@@ -22,4 +22,5 @@ data class MonitoredSensorData(
     val engineLoad: SimpleSensor = SimpleSensor(),
     val throttlePosition: SimpleSensor = SimpleSensor(),
     val ethanolContent: SimpleSensor = SimpleSensor(),
+    val intakeAirTemp: SimpleSensor = SimpleSensor(),
 )

@@ -122,11 +122,11 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row {
-//                SimpleNumericGauge(
-//                    title = "IAT",
-//                    curVal = sensors.intakeAirTemperature.value,
-//                    modifier = modifier.weight(1f)
-//                )
+                SimpleNumericGauge(
+                    title = "IAT",
+                    curVal = sensors.intakeAirTemp.value,
+                    modifier = modifier.weight(1f)
+                )
                 SimpleNumericGauge(
                     title = "ETH",
                     curVal = sensors.ethanolContent.value,

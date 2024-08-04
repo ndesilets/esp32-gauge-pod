@@ -26,5 +26,6 @@ data class OBDIISensorDataEvent(
 
     @ColumnInfo(name = "engine_rpm") val engineRpm: Float,
     @ColumnInfo(name = "engine_load") val engineLoad: Float,
-    @ColumnInfo(name = "throttle_position") val throttlePosition: Float
+    @ColumnInfo(name = "throttle_position") val throttlePosition: Float,
+    @ColumnInfo(name = "intake_air_temp") val intakeAirTemp: Float,
 )

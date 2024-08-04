@@ -228,7 +228,8 @@ class MonitoringService(val dataRepository: SensorDataRepository) {
                     engineRpm = SimpleSensor(event.engineRpm),
                     engineLoad = SimpleSensor(event.engineLoad),
                     throttlePosition = SimpleSensor(event.throttlePosition),
-                    ethanolContent = SimpleSensor(event.ethanolContent)
+                    ethanolContent = SimpleSensor(event.ethanolContent),
+                    intakeAirTemp = SimpleSensor(event.intakeAirTemp)
                 )
                 previousMonitoredSensorData = monitoredSensorData
 

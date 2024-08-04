@@ -37,7 +37,8 @@ class MockedESP32DataSource : ESP32DataSourceI {
 
                 engineRpm = generateValue(phase, 0f, 7000f),
                 engineLoad = generateValue(phase, 0f, 100f),
-                throttlePosition = generateValue(phase, 0f, 100f)
+                throttlePosition = generateValue(phase, 0f, 100f),
+                intakeAirTemp = generateValue(phase, 60f, 120f),
             )
 
             emit(OBDIISensorDataEvent)
