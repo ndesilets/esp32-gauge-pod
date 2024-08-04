@@ -24,10 +24,7 @@ import androidx.compose.ui.unit.sp
 import com.example.esp32gauges.MainViewModel
 import com.example.esp32gauges.composables.AirFuelFunLand
 import com.example.esp32gauges.composables.BarGauge
-import com.example.esp32gauges.composables.HistoryNumericGauge
 import com.example.esp32gauges.composables.KnockFunLand
-import com.example.esp32gauges.composables.KnockFunLandPreview
-import com.example.esp32gauges.composables.MinMaxNumericGauge
 import com.example.esp32gauges.composables.SimpleNumericGauge
 import com.example.esp32gauges.repositories.daos.MockSensorDataEventDao
 import com.example.esp32gauges.esp32.MockedESP32DataSource
@@ -132,6 +129,11 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                     curVal = sensors.ethanolContent.value,
                     modifier = modifier.weight(1f)
                 )
+                SimpleNumericGauge(
+                    title = "FUEL P",
+                    curVal = sensors.fuelPressure.value,
+                    modifier = modifier.weight(1f)
+                )
             }
         }
 
@@ -151,30 +153,6 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
                 afCorrection = sensors.afCorrection,
                 afLearn = sensors.afLearn,
             )
-        }
-
-        Column(
-            modifier = modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Row(modifier = modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .padding(vertical = 8.dp)) {
-                MinMaxNumericGauge(
-                    title = "Fuel P",
-                    curVal = sensors.fuelPressure.value,
-                    minVal = sensors.fuelPressure.summary.minSession,
-                    maxVal = sensors.fuelPressure.summary.maxSession,
-                    modifier = modifier.weight(1f)
-                )
-            }
-//            Row(modifier = modifier
-//                .fillMaxWidth()
-//                .height(100.dp)
-//                .padding(vertical = 8.dp)) {
-//
-//            }
         }
     }
 }
