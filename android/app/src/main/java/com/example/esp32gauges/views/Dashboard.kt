@@ -122,7 +122,6 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
         Box(modifier = modifier.padding(vertical = 8.dp)){
             AirFuelFunLand(
-                modifier = modifier.height(120.dp),
                 afCorrection = sensors.afCorrection,
                 afLearn = sensors.afLearn,
                 afRatio = sensors.afRatio,
@@ -131,7 +130,6 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
 
         Box(modifier = modifier.padding(vertical = 8.dp)){
             KnockFunLand(
-                modifier = modifier.height(120.dp),
                 dam = sensors.afCorrection,
                 afCorrection = sensors.afCorrection,
                 afLearn = sensors.afLearn,

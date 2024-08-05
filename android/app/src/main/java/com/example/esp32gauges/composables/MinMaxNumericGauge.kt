@@ -2,8 +2,12 @@ package com.example.esp32gauges.composables
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +16,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 
@@ -24,7 +29,9 @@ fun MinMaxNumericGauge(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .width(IntrinsicSize.Min),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
@@ -35,7 +42,7 @@ fun MinMaxNumericGauge(
             fontWeight = FontWeight.Bold,
             text = String.format("%.2f", curVal)
         )
-        Row(modifier = modifier.fillMaxWidth()) {
+        Row() {
             Text(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
@@ -49,7 +56,7 @@ fun MinMaxNumericGauge(
                 text = "max"
             )
         }
-        Row(modifier = modifier.fillMaxWidth()) {
+        Row() {
             Text(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
@@ -66,7 +73,7 @@ fun MinMaxNumericGauge(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0x000000, widthDp = 100, heightDp = 80)
+@Preview(showBackground = true, backgroundColor = 0x000000)
 @Composable
 fun MinMaxNumericGaugePreview() {
     MinMaxNumericGauge(
