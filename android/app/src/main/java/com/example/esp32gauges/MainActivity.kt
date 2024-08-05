@@ -40,7 +40,8 @@ class MainActivity : ComponentActivity() {
         val sensorDatabase =
             Room.inMemoryDatabaseBuilder(applicationContext, SensorDatabase::class.java).build()
 
-        val dataRepository = SensorDataRepository(sensorDataSource, sensorDatabase.sensorDataEventDao())
+        val dataRepository =
+            SensorDataRepository(sensorDataSource, sensorDatabase.sensorDataEventDao())
         val monitoringService = MonitoringService(dataRepository)
         monitoringService.startMonitoring()
 
@@ -51,9 +52,13 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 Scaffold(bottomBar = { BottomNavigationBar(navController) }) { innerPadding ->
-                    NavHost(navController, startDestination = Screen.Dashboard.route, modifier = Modifier.padding(innerPadding)) {
+                    NavHost(
+                        navController,
+                        startDestination = Screen.Dashboard.route,
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
                         composable(Screen.Dashboard.route) { Dashboard(viewModel) }
-                        composable(Screen.SessionManager.route) { SessionManager() }
+                        composable(Screen.SessionManager.route) { SessionManager(viewModel) }
                     }
                 }
             }

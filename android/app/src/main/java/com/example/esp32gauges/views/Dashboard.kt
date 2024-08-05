@@ -25,6 +25,7 @@ import com.example.esp32gauges.MainViewModel
 import com.example.esp32gauges.composables.AirFuelFunLand
 import com.example.esp32gauges.composables.BarGauge
 import com.example.esp32gauges.composables.KnockFunLand
+import com.example.esp32gauges.composables.SensorStatusBar
 import com.example.esp32gauges.composables.SimpleNumericGauge
 import com.example.esp32gauges.repositories.daos.MockSensorDataEventDao
 import com.example.esp32gauges.esp32.MockedESP32DataSource

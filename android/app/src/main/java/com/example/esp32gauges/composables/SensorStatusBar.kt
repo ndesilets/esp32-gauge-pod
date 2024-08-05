@@ -1,4 +1,4 @@
-package com.example.esp32gauges.views
+package com.example.esp32gauges.composables
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background

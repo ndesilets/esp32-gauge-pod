@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.esp32gauges.models.sensors.MonitoredNumericSensor
 
 @Composable
@@ -23,11 +24,10 @@ fun AirFuelFunLand(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("Air Fuel Fun Land")
+        Text(fontSize = 10.sp, text = "AIR AND FUEL")
         Row(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
         ) {
             MinMaxNumericGauge(
                 title = "S. Trim",
