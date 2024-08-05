@@ -55,14 +55,8 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             modifier = modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Coolant Temp")
-            Text(
-                "${sensors.coolantTemp.value.toInt()}",
-                fontSize = 24.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
             BarGauge(
+                name = "Coolant Temp",
                 minVal = -20f,
                 maxVal = 300f,
                 currentVal = sensors.coolantTemp.value,
@@ -75,14 +69,8 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             modifier = modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Oil Temp")
-            Text(
-                "${sensors.oilTemp.value.toInt()}",
-                fontSize = 24.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
             BarGauge(
+                name = "Oil Temp",
                 minVal = -20f,
                 maxVal = 300f,
                 currentVal = sensors.oilTemp.value,
@@ -95,14 +83,8 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
             modifier = modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Oil Pressure")
-            Text(
-                "${sensors.oilPressure.value.toInt()}",
-                fontSize = 24.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold
-            )
             BarGauge(
+                name = "Oil Pressure",
                 minVal = 0f,
                 maxVal = 100f,
                 currentVal = sensors.oilPressure.value,

@@ -20,7 +20,7 @@ import com.example.esp32gauges.ui.theme.ESP32GaugesTheme
 @Composable
 fun SessionManager(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxSize()) {
-        Button(onClick = { viewModel.reset() }) {
+        Button(onClick = { viewModel.reset() }, modifier = modifier) {
             Text("Reset Session")
         }
     }
