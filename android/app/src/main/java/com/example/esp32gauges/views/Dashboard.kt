@@ -158,7 +158,7 @@ fun Dashboard(viewModel: MainViewModel, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(widthDp = 480, heightDp = 1056, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(widthDp = 480, heightDp = 900, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun DashboardPreview() {
     val viewModel =

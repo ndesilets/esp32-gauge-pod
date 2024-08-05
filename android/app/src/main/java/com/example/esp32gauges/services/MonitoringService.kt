@@ -241,4 +241,8 @@ class MonitoringService(val dataRepository: SensorDataRepository) {
     fun stopMonitoring() {
         dataCollectionJob?.cancel()
     }
+
+    fun reset() {
+        previousMonitoredSensorData = MonitoredSensorData()
+    }
 }

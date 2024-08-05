@@ -15,7 +15,6 @@ data class MainUiState(
 )
 
 class MainViewModel(private val monitoringService: MonitoringService) : ViewModel() {
-    // expose screen ui state
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
 
@@ -23,12 +22,15 @@ class MainViewModel(private val monitoringService: MonitoringService) : ViewMode
         monitorSensorData()
     }
 
-    // handle business logic
     private fun monitorSensorData() {
         viewModelScope.launch {
             monitoringService.monitored.collect { monitored ->
                 _uiState.value = _uiState.value.copy(monitoredSensorData = monitored)
             }
         }
+    }
+
+    fun reset() {
+        monitoringService.reset()
     }
 }

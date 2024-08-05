@@ -49,16 +49,18 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ESP32GaugesTheme {
-                val navController = rememberNavController()
+                Surface() {
+                    val navController = rememberNavController()
 
-                Scaffold(bottomBar = { BottomNavigationBar(navController) }) { innerPadding ->
-                    NavHost(
-                        navController,
-                        startDestination = Screen.Dashboard.route,
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-                        composable(Screen.Dashboard.route) { Dashboard(viewModel) }
-                        composable(Screen.SessionManager.route) { SessionManager(viewModel) }
+                    Scaffold(bottomBar = { BottomNavigationBar(navController) }) { innerPadding ->
+                        NavHost(
+                            navController,
+                            startDestination = Screen.Dashboard.route,
+                            modifier = Modifier.padding(innerPadding)
+                        ) {
+                            composable(Screen.Dashboard.route) { Dashboard(viewModel) }
+                            composable(Screen.SessionManager.route) { SessionManager(viewModel) }
+                        }
                     }
                 }
             }
