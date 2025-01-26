@@ -29,8 +29,122 @@ bool cButtonPressed = false;
 // --- jank
 
 // positive modulo
-inline int the_one_true_modulo(int i, int n) {
-    return (i % n + n) % n;
+inline int the_one_true_modulo(int i, int n) { return (i % n + n) % n; }
+
+// --- eee
+
+const int rifeTempSensorRef[] = {
+  189726, // -20F
+  132092, // -10F
+  93425,  //   0F
+  67059,  //  10F
+  48804,  //  20F
+  35983,  //  30F
+  26855,  //  40F
+  20274,  //  50F
+  15473,  //  60F
+  11929,  //  70F
+  9287,   //  80F
+  7295,   //  90F
+  5781,   //  100F
+  4618,   //  110F
+  3718,   //  120F
+  3016,   //  130F
+  2463,   //  140F
+  2025,   //  150F
+  1675,   //  160F
+  1395,   //  170F
+  1167,   //  180F
+  983,    //  190F
+  832,    //  200F
+  707,    //  210F
+  604,    //  220F
+  519,    //  230F
+  447,    //  240F
+  387,    //  250F
+  336,    //  260F
+  294,    //  270F
+  257,    //  280F
+  226     //  290F
+};
+const int tempSensorRefLen = sizeof(rifeTempSensorRef) / sizeof(int);
+
+double interpolateTemperature(int resistance) {
+  // find closest resistance values
+  int maxResistanceIndex = 0;
+  int minResistanceIndex = 0;
+  for (int i = 0; i < tempSensorRefLen; i++) {
+    if (resistance > rifeTempSensorRef[i]) {
+      if (i == 0) {
+        return -20.0f;
+      } else if (i == tempSensorRefLen - 1) {
+        return 290.0f;
+      }
+
+      maxResistanceIndex = i - 1;
+      minResistanceIndex = i;
+      break;
+    }
+  }
+
+  int maxResistance = rifeTempSensorRef[maxResistanceIndex];
+  int minResistance = rifeTempSensorRef[minResistanceIndex];
+
+  int maxResistanceTemp = -20.0 + (maxResistanceIndex * 10);
+  int minResistanceTemp = maxResistanceTemp + 10;
+
+  // R1 = cold, R2 = hot
+  int correctionFactor = 7;
+  double interpolated = maxResistanceTemp + ((double)(resistance - maxResistance) / (double)(minResistance - maxResistance)) * (minResistanceTemp - maxResistanceTemp);
+
+  return interpolated + correctionFactor;
+}
+
+const int rife100PsiSensorRef[] = {
+    409,   // 0.0 PSI,
+    514,   // 3.2 PSI,
+    620,   // 6.5 PSI,
+    725,   // 9.7 PSI,
+    832,   // 12.9 PSI,
+    938,   // 16.1 PSI,
+    1043,  // 19.4 PSI,
+    1149,  // 22.6 PSI,
+    1254,  // 25.8 PSI,
+    1360,  // 29.0 PSI,
+    1465,  // 32.3 PSI,
+    1572,  // 35.5 PSI,
+    1677,  // 38.7 PSI,
+    1783,  // 41.9 PSI,
+    1888,  // 45.2 PSI,
+    1994,  // 48.4 PSI,
+    2099,  // 51.6 PSI,
+    2205,  // 54.8 PSI,
+    2311,  // 58.1 PSI,
+    2417,  // 61.3 PSI,
+    2522,  // 64.5 PSI,
+    2628,  // 67.7 PSI,
+    2733,  // 71.0 PSI,
+    2839,  // 74.2 PSI,
+    2944,  // 77.4 PSI,
+    3050,  // 80.6 PSI,
+    3156,  // 83.9 PSI,
+    3262,  // 87.1 PSI,
+    3367,  // 90.3 PSI,
+    3473,  // 93.5 PSI,
+    3578,  // 96.8 PSI,
+    3685,  // 100.0 PSI
+};
+
+double interpolatePressure(int adcValue) {
+  if (adcValue < 409) {
+    return 0;
+  } else if (adcValue > 3685) {
+    return 100;
+  }
+
+  double psi = ((double)(adcValue - 409) / (3685 - 409)) * 100;
+
+  return psi;
 }
 
 // --- sensor buffers
@@ -40,16 +154,33 @@ unsigned long now = 0;
 
 // --- sensor data functions
 
-double getOilPressure() {
+double getOilPressureMocked() {
   static double x = 0;
   x += 0.01;
   return (sin(x) * 50) + 50;
 }
 
-double getOilTemp() {
+double getOilTempMocked() {
   static double x = 0;
   x += 0.01;
   return sin(x) * 160 + 140;
+}
+
+double getOilPressure() {
+  int analogValue = analogRead(A1);
+  Serial.printf("ADC Value: %d\n", analogValue);
+
+  double interpolatedValue = interpolatePressure(analogValue);
+
+  return interpolatedValue;
+}
+
+double getOilTemp() {
+  int analogValue = analogRead(A0);
+  int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
+  double interpolatedValue = interpolateTemperature(calculatedResistance);
+
+  return interpolatedValue;
 }
 
 // --- display functions
@@ -118,8 +249,8 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
 
 // single gauge view
 
-void renderSingleDisplay(const char *header, int sensorReading, int minV, int maxV,
-                         int numDetents, const int *detents) {
+void renderSingleDisplay(const char *header, int sensorReading, int minV,
+                         int maxV, int numDetents, const int *detents) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
@@ -171,23 +302,31 @@ void setup() {
   pinMode(C_BTN_PIN, INPUT_PULLUP);
   pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
 
+  // power supply (temporary)
+  pinMode(A5, OUTPUT);
+  digitalWrite(A5, HIGH);
+
   Serial.println("LMAO!");
 
   initDisplay();
 }
 
-
 void loop() {
   int oilTemp = getOilTemp();
   int oilPressure = getOilPressure();
 
-  now = millis();
-  if (now - lastSensorRead > 1000) {
-    lastSensorRead = now;
+  // now = millis();
+  // if (now - lastSensorRead > 1000) {
+  //   lastSensorRead = now;
 
-    // int sensorValue = analogRead(A0);
-    // Serial.printf("A0: %d\n", sensorValue);
-  }
+  //   // A0 is the temp sensor signal pin
+  //   // A5 is the vref pin
+  //   int analogValue = analogRead(A0);
+  //   int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
+  //   double interpolatedValue = interpolateTemperature(calculatedResistance);
+
+  //   Serial.printf("A0: %d\tCalculated: %d\tInterpolated: %.2f\n", analogValue, calculatedResistance, interpolatedValue);
+  // }
 
   //
   // button handling
@@ -211,7 +350,8 @@ void loop() {
     bButtonPressed = true;
   } else if (bButtonPressed) {
     bButtonPressed = false;
-    displayMode = static_cast<DisplayMode>(the_one_true_modulo(displayMode - 1, 3));
+    displayMode =
+        static_cast<DisplayMode>(the_one_true_modulo(displayMode - 1, 3));
   }
 
   if (!digitalRead(C_BTN_PIN)) {
@@ -233,12 +373,10 @@ void loop() {
       renderCombinedDisplay(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
-      renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3,
-                          tempDetents);
+      renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents);
       break;
     case OIL_PRESSURE:
-      renderSingleDisplay("OIL PSI", oilPressure, 0, 100,
-                          4, psiDetents);
+      renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents);
       break;
     default:
       Serial.println("oh my god bruh aww hell nah man what the FUCK man");
