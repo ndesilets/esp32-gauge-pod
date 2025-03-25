@@ -94,13 +94,12 @@ double interpolateTemperature(int resistance) {
   int minResistanceTemp = maxResistanceTemp + 10;
 
   // R1 = cold, R2 = hot
-  int correctionFactor = 7;
   double interpolated =
       maxResistanceTemp + ((double)(resistance - maxResistance) /
                            (double)(minResistance - maxResistance)) *
                               (minResistanceTemp - maxResistanceTemp);
 
-  return interpolated + correctionFactor;
+  return interpolated;
 }
 
 const int rife100PsiSensorRef[] = {
@@ -180,9 +179,10 @@ double calcOilPressure(int analogValue) {
 double calcOilTemp(int analogValue) {
   int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
   double interpolatedValue = interpolateTemperature(calculatedResistance);
+  const double MODIFIER = 7;
 
-  return interpolatedValue; // seems to be spot on compared to combustion
-                            // thermometer
+  return interpolatedValue + MODIFIER; // seems to be spot on compared to
+                                       // combustion thermometer
 }
 
 // --- display functions
