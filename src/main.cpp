@@ -4,8 +4,6 @@
 #include <Wire.h>
 
 #define SH1107_DEFAULT_ADDR 0x3C
-#define DISPLAY_WIDTH 128
-#define DISPLAY_HEIGHT 64
 #define A_BTN_PIN 14
 #define B_BTN_PIN 32
 #define C_BTN_PIN 15
@@ -17,9 +15,6 @@ enum DisplayPower { OFF, ON };
 Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
 DisplayMode displayMode = COMBINED;
 DisplayPower displayPower = ON;
-
-const int tempDetents[] = {0, 180, 250};
-const int psiDetents[] = {20, 40, 60, 80};
 
 bool intButtonPressed = false;
 bool aButtonPressed = false;
@@ -102,42 +97,9 @@ double interpolateTemperature(int resistance) {
   return interpolated;
 }
 
-const int rife100PsiSensorRef[] = {
-    409,  // 0.0 PSI,
-    514,  // 3.2 PSI,
-    620,  // 6.5 PSI,
-    725,  // 9.7 PSI,
-    832,  // 12.9 PSI,
-    938,  // 16.1 PSI,
-    1043, // 19.4 PSI,
-    1149, // 22.6 PSI,
-    1254, // 25.8 PSI,
-    1360, // 29.0 PSI,
-    1465, // 32.3 PSI,
-    1572, // 35.5 PSI,
-    1677, // 38.7 PSI,
-    1783, // 41.9 PSI,
-    1888, // 45.2 PSI,
-    1994, // 48.4 PSI,
-    2099, // 51.6 PSI,
-    2205, // 54.8 PSI,
-    2311, // 58.1 PSI,
-    2417, // 61.3 PSI,
-    2522, // 64.5 PSI,
-    2628, // 67.7 PSI,
-    2733, // 71.0 PSI,
-    2839, // 74.2 PSI,
-    2944, // 77.4 PSI,
-    3050, // 80.6 PSI,
-    3156, // 83.9 PSI,
-    3262, // 87.1 PSI,
-    3367, // 90.3 PSI,
-    3473, // 93.5 PSI,
-    3578, // 96.8 PSI,
-    3685, // 100.0 PSI
-};
-
 double interpolatePressure(int adcValue) {
+  // values are linear for the rife 100psi sensor so just interpolate off the
+  // 0-5v reading scaled down to 3.3v
   if (adcValue < 409) {
     return 0;
   } else if (adcValue > 3685) {
@@ -169,20 +131,17 @@ double getOilTempMocked() {
 }
 
 double calcOilPressure(int analogValue) {
-  const double MODIFIER =
-      1.5; // seems to be perfect compared against maddox power bleeder
-  double interpolatedValue = interpolatePressure(analogValue);
-
-  return interpolatedValue;
+  // no fuckery needed here suprisingly
+  return interpolatePressure(analogValue);
 }
 
 double calcOilTemp(int analogValue) {
   int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
   double interpolatedValue = interpolateTemperature(calculatedResistance);
-  const double MODIFIER = 7;
+  const double MODIFIER =
+      7; // seems to be spot on compared to combustion thermometer
 
-  return interpolatedValue + MODIFIER; // seems to be spot on compared to
-                                       // combustion thermometer
+  return interpolatedValue + MODIFIER;
 }
 
 // --- display functions
@@ -199,161 +158,6 @@ void initDisplay() {
 
   display.setRotation(1); // get rotated idiot
   display.setTextColor(SH110X_WHITE);
-}
-
-// combined gauge view
-
-void renderColumn(int offset, const char *header1, const char *header2,
-                  int sensorValue) {
-  int16_t cx, cy, x1, y1;
-  uint16_t w, h;
-  char sensorValueStr[5] = {'\0'};
-
-  display.setTextSize(1);
-
-  // first header
-  display.getTextBounds(header1, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
-  display.print(header1);
-  cy += h + 2;
-
-  // second header
-  display.getTextBounds(header2, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
-  display.print(header2);
-  cy += h + 16;
-
-  // sensor value
-  display.setTextSize(3);
-  std::snprintf(sensorValueStr, 5, "%d", sensorValue);
-
-  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(offset + ((DISPLAY_WIDTH / 2 - w) / 2), cy);
-  display.print(sensorValueStr);
-}
-
-void renderCombinedDisplay(int oilTemp, int oilPressure) {
-  int16_t cx, cy, x1, y1;
-  uint16_t w, h;
-  const char *oilHeader = "OIL";
-  const char *tempHeader = "TEMP";
-  const char *psiHeader = "PSI";
-
-  display.clearDisplay();
-  display.setCursor(0, 0);
-
-  display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
-  renderColumn(0, oilHeader, tempHeader, oilTemp);
-  renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
-
-  display.display();
-}
-
-void drawHorizontalGauge(int x, int y, int numDetents, const int *detents, int minV, int maxV, int sensorReading) {
-  // box
-  display.drawRect(x, y - 11, DISPLAY_WIDTH, 10, SH110X_WHITE);
-
-  // detents
-  for (int i = 0; i < numDetents; i++) {
-    int detentX = map(detents[i], minV, maxV, 0, DISPLAY_WIDTH - 8);
-    display.drawFastVLine(x + 4 + detentX, y - 15, 4, SH110X_WHITE);
-  }
-
-  // gauge fill
-  int width = map(sensorReading, minV, maxV, 0, DISPLAY_WIDTH - 4);
-  display.fillRect(x + 2, y - 9, width, 6, SH110X_WHITE);
-}
-
-void renderCombinedDisplay2(int oilTemp, int oilPressure) {
-  int16_t cx, cy, x1, y1;
-  uint16_t w, h;
-  char sensorValueStr[5] = {'\0'};
-  const char *tempHeader = "OIL TEMP";
-  const char *psiHeader = "OIL PRESSURE";
-
-  display.clearDisplay();
-  display.setCursor(0, 0);
-
-  // set oil temp header
-  display.setTextSize(1);
-  display.getTextBounds(tempHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(0, cy);
-  display.print(tempHeader);
-
-  // set oil temp value
-  std::snprintf(sensorValueStr, 5, "%d", oilTemp);
-  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(DISPLAY_WIDTH - w, cy);
-  display.print(sensorValueStr);
-
-  // set oil temp gauge
-  drawHorizontalGauge(0, cy + 26, 3, tempDetents, -20, 300, oilTemp);
-
-  cy += 34;
-
-  // set oil pressure header
-  display.setTextSize(1);
-  display.getTextBounds(psiHeader, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(0, cy);
-  display.print(psiHeader);
-
-  // set oil pressure value
-  memset(sensorValueStr, '\0', 5);
-  std::snprintf(sensorValueStr, 5, "%d", oilPressure);
-  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor(DISPLAY_WIDTH - w, cy);
-  display.print(sensorValueStr);
-
-  // set oil pressure gauge
-  drawHorizontalGauge(0, cy + 26, 4, psiDetents, 0, 100, oilPressure);
-  
-
-  display.display();
-}
-
-// single gauge view
-
-void renderSingleDisplay(const char *header, int sensorReading, int minV,
-                         int maxV, int numDetents, const int *detents) {
-  int16_t cx, cy, x1, y1;
-  uint16_t w, h;
-  char sensorValueStr[5] = {'\0'};
-  const int movingAvgsLineLength = 5 * 3 + 6; // 3 vals + whitespace
-  char movingAvgsLine[movingAvgsLineLength] = {'\0'};
-
-  display.clearDisplay();
-
-  // header
-  display.setTextSize(1);
-  display.getTextBounds(header, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
-  display.print(header);
-  cy += h + 10;
-
-  // current sensor value
-  display.setTextSize(3);
-  std::snprintf(sensorValueStr, 5, "%d", sensorReading);
-
-  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
-  display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
-  display.print(sensorValueStr);
-
-  // -- horizontal gauge
-
-  // box
-  display.drawRect(0, DISPLAY_HEIGHT - 11, DISPLAY_WIDTH, 10, SH110X_WHITE);
-
-  // detents
-  for (int i = 0; i < numDetents; i++) {
-    int detentX = map(detents[i], minV, maxV, 0, DISPLAY_WIDTH - 8);
-    display.drawFastVLine(4 + detentX, DISPLAY_HEIGHT - 15, 4, SH110X_WHITE);
-  }
-
-  // gauge fill
-  int width = map(sensorReading, minV, maxV, 0, DISPLAY_WIDTH - 4);
-  display.fillRect(2, DISPLAY_HEIGHT - 9, width, 6, SH110X_WHITE);
-
-  display.display();
 }
 
 // --- main
@@ -376,6 +180,10 @@ void setup() {
 }
 
 void loop() {
+  //
+  // read sensor values
+  //
+
   int adcReading = analogRead(A0);
   int oilTemp = calcOilTemp(adcReading);
   Serial.printf("temp - adc: %d, val: %d - ", adcReading, oilTemp);
@@ -383,20 +191,6 @@ void loop() {
   adcReading = analogRead(A1);
   int oilPressure = calcOilPressure(adcReading);
   Serial.printf("pressure - adc: %d, val: %d\n", adcReading, oilPressure);
-
-  // now = millis();
-  // if (now - lastSensorRead > 1000) {
-  //   lastSensorRead = now;
-
-  //   // A0 is the temp sensor signal pin
-  //   // A5 is the vref pin
-  //   int analogValue = analogRead(A0);
-  //   int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
-  //   double interpolatedValue = interpolateTemperature(calculatedResistance);
-
-  //   Serial.printf("A0: %d\tCalculated: %d\tInterpolated: %.2f\n",
-  //   analogValue, calculatedResistance, interpolatedValue);
-  // }
 
   //
   // button handling
@@ -440,7 +234,7 @@ void loop() {
   } else {
     switch (displayMode) {
     case COMBINED:
-      //renderCombinedDisplay(oilTemp, oilPressure);
+      // renderCombinedDisplay(oilTemp, oilPressure);
       renderCombinedDisplay2(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
