@@ -169,11 +169,8 @@ double getOilTempMocked() {
 }
 
 double calcOilPressure(int analogValue) {
-  const double MODIFIER =
-      1.5; // seems to be perfect compared against maddox power bleeder
-  double interpolatedValue = interpolatePressure(analogValue);
-
-  return interpolatedValue;
+  // rife 100psi sensor voltage/pressure values scale linearly, so probably dont need the lookup table
+  return interpolatePressure(analogValue);
 }
 
 double calcOilTemp(int analogValue) {
@@ -289,7 +286,7 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure) {
   // set oil temp gauge
   drawHorizontalGauge(0, cy + 26, 3, tempDetents, -20, 300, oilTemp);
 
-  cy += 34;
+  cy += 38;
 
   // set oil pressure header
   display.setTextSize(1);
