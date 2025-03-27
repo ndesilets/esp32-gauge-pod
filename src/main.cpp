@@ -171,7 +171,7 @@ double getOilTempMocked() {
 double calcOilPressure(int analogValue) {
   const double MODIFIER =
       1.5; // seems to be perfect compared against maddox power bleeder
-  double interpolatedValue = interpolatePressure(analogValue - 80) / MODIFIER;
+  double interpolatedValue = interpolatePressure(analogValue);
 
   return interpolatedValue;
 }
@@ -245,6 +245,68 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
   renderColumn(0, oilHeader, tempHeader, oilTemp);
   renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
+
+  display.display();
+}
+
+void drawHorizontalGauge(int x, int y, int numDetents, const int *detents, int minV, int maxV, int sensorReading) {
+  // box
+  display.drawRect(x, y - 11, DISPLAY_WIDTH, 10, SH110X_WHITE);
+
+  // detents
+  for (int i = 0; i < numDetents; i++) {
+    int detentX = map(detents[i], minV, maxV, 0, DISPLAY_WIDTH - 8);
+    display.drawFastVLine(x + 4 + detentX, y - 15, 4, SH110X_WHITE);
+  }
+
+  // gauge fill
+  int width = map(sensorReading, minV, maxV, 0, DISPLAY_WIDTH - 4);
+  display.fillRect(x + 2, y - 9, width, 6, SH110X_WHITE);
+}
+
+void renderCombinedDisplay2(int oilTemp, int oilPressure) {
+  int16_t cx, cy, x1, y1;
+  uint16_t w, h;
+  char sensorValueStr[5] = {'\0'};
+  const char *tempHeader = "OIL TEMP";
+  const char *psiHeader = "OIL PRESSURE";
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  // set oil temp header
+  display.setTextSize(1);
+  display.getTextBounds(tempHeader, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(0, cy);
+  display.print(tempHeader);
+
+  // set oil temp value
+  std::snprintf(sensorValueStr, 5, "%d", oilTemp);
+  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(DISPLAY_WIDTH - w, cy);
+  display.print(sensorValueStr);
+
+  // set oil temp gauge
+  drawHorizontalGauge(0, cy + 26, 3, tempDetents, -20, 300, oilTemp);
+
+  cy += 34;
+
+  // set oil pressure header
+  display.setTextSize(1);
+  display.getTextBounds(psiHeader, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(0, cy);
+  display.print(psiHeader);
+
+  // set oil pressure value
+  memset(sensorValueStr, '\0', 5);
+  std::snprintf(sensorValueStr, 5, "%d", oilPressure);
+  display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+  display.setCursor(DISPLAY_WIDTH - w, cy);
+  display.print(sensorValueStr);
+
+  // set oil pressure gauge
+  drawHorizontalGauge(0, cy + 26, 4, psiDetents, 0, 100, oilPressure);
+  
 
   display.display();
 }
@@ -378,7 +440,8 @@ void loop() {
   } else {
     switch (displayMode) {
     case COMBINED:
-      renderCombinedDisplay(oilTemp, oilPressure);
+      //renderCombinedDisplay(oilTemp, oilPressure);
+      renderCombinedDisplay2(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
       renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents);
