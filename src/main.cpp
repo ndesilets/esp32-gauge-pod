@@ -169,17 +169,18 @@ double getOilTempMocked() {
 }
 
 double calcOilPressure(int analogValue) {
-  // rife 100psi sensor voltage/pressure values scale linearly, so probably dont need the lookup table
+  // rife 100psi sensor voltage/pressure values scale linearly, so probably dont
+  // need the lookup table
   return interpolatePressure(analogValue);
 }
 
 double calcOilTemp(int analogValue) {
   int calculatedResistance = 10000 * (((double)4095 / analogValue) - 1);
   double interpolatedValue = interpolateTemperature(calculatedResistance);
-  const double MODIFIER = 7;
+  const double MODIFIER =
+      7; // seems to be spot on compared to combustion thermometer
 
-  return interpolatedValue + MODIFIER; // seems to be spot on compared to
-                                       // combustion thermometer
+  return interpolatedValue + MODIFIER;
 }
 
 // --- display functions
@@ -246,7 +247,8 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.display();
 }
 
-void drawHorizontalGauge(int x, int y, int numDetents, const int *detents, int minV, int maxV, int sensorReading) {
+void drawHorizontalGauge(int x, int y, int numDetents, const int *detents,
+                         int minV, int maxV, int sensorReading) {
   // box
   display.drawRect(x, y - 11, DISPLAY_WIDTH, 10, SH110X_WHITE);
 
@@ -303,7 +305,6 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure) {
 
   // set oil pressure gauge
   drawHorizontalGauge(0, cy + 26, 4, psiDetents, 0, 100, oilPressure);
-  
 
   display.display();
 }
@@ -437,7 +438,7 @@ void loop() {
   } else {
     switch (displayMode) {
     case COMBINED:
-      //renderCombinedDisplay(oilTemp, oilPressure);
+      // renderCombinedDisplay(oilTemp, oilPressure);
       renderCombinedDisplay2(oilTemp, oilPressure);
       break;
     case OIL_TEMP:
