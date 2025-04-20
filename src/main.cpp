@@ -11,14 +11,15 @@
 #define C_BTN_PIN 15
 #define INTERNAL_BTN_PIN 38
 
-enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE };
-enum DisplayPower { OFF, ON };
+enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE, DISPLAY_OFF };
+const int DISPLAY_MODE_COUNT = 4;
 
 Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
-DisplayMode displayMode = COMBINED;
-DisplayPower displayPower = ON;
+DisplayMode displayMode = OIL_TEMP;
 
 const int tempDetents[] = {0, 180, 250};
+int minMeasuredTemp = 0;
+int maxMeasuredTemp = 0;
 const int psiDetents[] = {20, 40, 60, 80};
 
 bool intButtonPressed = false;
@@ -164,7 +165,8 @@ double getOilPressureMocked() {
 
 double getOilTempMocked() {
   static double x = 0;
-  x += 0.01;
+  // x += 0.01;
+  x += 0.1;
   return sin(x) * 160 + 140;
 }
 
@@ -312,7 +314,8 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure) {
 // single gauge view
 
 void renderSingleDisplay(const char *header, int sensorReading, int minV,
-                         int maxV, int numDetents, const int *detents) {
+                         int maxV, int numDetents, const int *detents,
+                         bool showMinMax, int minMeasured, int maxMeasured) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
@@ -335,6 +338,25 @@ void renderSingleDisplay(const char *header, int sensorReading, int minV,
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
   display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
   display.print(sensorValueStr);
+
+  // min/max values
+  if (showMinMax) {
+    display.setTextSize(1);
+
+    // min
+    memset(&sensorValueStr, '\0', 5);
+    std::snprintf(sensorValueStr, 5, "%d", minMeasured);
+    display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+    display.setCursor(0, cy + h);
+    display.print(sensorValueStr);
+
+    // max
+    memset(&sensorValueStr, '\0', 5);
+    std::snprintf(sensorValueStr, 5, "%d", maxMeasured);
+    display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
+    display.setCursor(DISPLAY_WIDTH - w, cy + h);
+    display.print(sensorValueStr);
+  }
 
   // -- horizontal gauge
 
@@ -371,11 +393,22 @@ void setup() {
   Serial.println("LMAO!");
 
   initDisplay();
+
+  int oilTemp = calcOilTemp(analogRead(A0));
+  minMeasuredTemp = oilTemp;
+  maxMeasuredTemp = oilTemp;
 }
 
 void loop() {
   int adcReading = analogRead(A0);
   int oilTemp = calcOilTemp(adcReading);
+  // int oilTemp = getOilTempMocked();
+  if (oilTemp < minMeasuredTemp) {
+    minMeasuredTemp = oilTemp;
+  }
+  if (oilTemp > maxMeasuredTemp) {
+    maxMeasuredTemp = oilTemp;
+  }
   Serial.printf("temp - adc: %d, val: %d - ", adcReading, oilTemp);
 
   adcReading = analogRead(A1);
@@ -400,56 +433,53 @@ void loop() {
   // button handling
   //
 
-  if (!digitalRead(INTERNAL_BTN_PIN)) {
-    intButtonPressed = true;
-  } else if (intButtonPressed) {
-    intButtonPressed = false;
-    displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
-  }
-
   if (!digitalRead(A_BTN_PIN)) {
     aButtonPressed = true;
   } else if (aButtonPressed) {
     aButtonPressed = false;
-    displayMode = COMBINED;
+    displayMode = static_cast<DisplayMode>(
+        the_one_true_modulo(displayMode + 1, DISPLAY_MODE_COUNT));
   }
 
   if (!digitalRead(B_BTN_PIN)) {
     bButtonPressed = true;
   } else if (bButtonPressed) {
     bButtonPressed = false;
-    displayMode =
-        static_cast<DisplayMode>(the_one_true_modulo(displayMode - 1, 3));
+    // displayMode = static_cast<DisplayMode>(
+    //     the_one_true_modulo(displayMode - 1, DISPLAY_MODE_COUNT));
+    displayMode = DISPLAY_OFF;
   }
 
   if (!digitalRead(C_BTN_PIN)) {
     cButtonPressed = true;
   } else if (cButtonPressed) {
     cButtonPressed = false;
-    displayMode = static_cast<DisplayMode>((displayMode + 1) % 3);
+    minMeasuredTemp = oilTemp;
+    maxMeasuredTemp = oilTemp;
   }
 
   //
   // display rendering
   //
 
-  if (displayPower == OFF) {
+  switch (displayMode) {
+  case COMBINED:
+    // renderCombinedDisplay(oilTemp, oilPressure);
+    renderCombinedDisplay2(oilTemp, oilPressure);
+    break;
+  case OIL_TEMP:
+    renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents, true,
+                        minMeasuredTemp, maxMeasuredTemp);
+    break;
+  case OIL_PRESSURE:
+    renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents, false, 0,
+                        0);
+    break;
+  case DISPLAY_OFF:
     display.clearDisplay();
-  } else {
-    switch (displayMode) {
-    case COMBINED:
-      // renderCombinedDisplay(oilTemp, oilPressure);
-      renderCombinedDisplay2(oilTemp, oilPressure);
-      break;
-    case OIL_TEMP:
-      renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents);
-      break;
-    case OIL_PRESSURE:
-      renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents);
-      break;
-    default:
-      Serial.println("oh my god bruh aww hell nah man what the FUCK man");
-    }
+    break;
+  default:
+    Serial.println("oh my god bruh aww hell nah man what the FUCK man");
   }
 
   display.display();
