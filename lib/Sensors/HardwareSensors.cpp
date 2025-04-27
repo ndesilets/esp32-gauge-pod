@@ -1,4 +1,4 @@
-#include "Sensors.h"
+#include <ISensors.h>
 
 // --- lookup tables
 
@@ -117,17 +117,29 @@ static double interpolatePressure(int adcValue) {
   return ((double)(adcValue - 409) / (3685 - 409)) * 100;
 }
 
-// --- public
+// --- concrete class
 
-int calcOilTemp(int analogValue) {
-  // forgot what resistor im using but its probably 10k ohm
-  int resistance = 10000 * (((double)4095 / analogValue) - 1);
-  // thermometer offset when compared with my fancy one
-  constexpr double CAL_OFFSET = 7.0;
+class HardwareSensors : public ISensors {
+ public:
+  int oilTemp() override {
+    int adc = analogRead(A0);
+    int R = 10000 * (((double)4095 / adc) - 1);
+    constexpr double CAL = 7.0;  // calibration offset
+    return (int)(interpolateTemperature(R) + CAL);
+  }
 
-  return (int)interpolateTemperature(resistance) + CAL_OFFSET;
+  int oilPressure() override {
+    int adc = analogRead(A1);
+    return (int)interpolatePressure(adc);
+  }
+};
+
+// --- factory
+
+namespace {
+HardwareSensors hwInstance;
 }
 
-int calcOilPressure(int analogValue) {
-  return (int)interpolatePressure(analogValue);
+ISensors& getHardwareSensors() {
+  return hwInstance;
 }

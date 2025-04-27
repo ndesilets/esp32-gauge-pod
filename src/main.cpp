@@ -17,12 +17,20 @@ int minMeasuredTemp = 0;
 int maxMeasuredTemp = 0;
 
 const int tempDetents[3] = {0, 180, 250};
+constexpr int TEMP_DENTENTS_COUNT = sizeof(tempDetents) / sizeof(int);
 const int psiDetents[4] = {20, 40, 60, 80};
+constexpr int PSI_DETENTS_COUNT = sizeof(psiDetents) / sizeof(int);
 
 bool intButtonPressed = false;
 bool aButtonPressed = false;
 bool bButtonPressed = false;
 bool cButtonPressed = false;
+
+#ifdef MOCK_SENSORS
+ISensors& sensors = getMockSensors();
+#else
+ISensors& sensors = getHardwareSensors();
+#endif
 
 void setup() {
   Serial.begin(115200);
@@ -38,7 +46,7 @@ void setup() {
 
   initDisplay();
 
-  int oilTemp = calcOilTemp(analogRead(A0));
+  int oilTemp = sensors.oilTemp();
   minMeasuredTemp = oilTemp;
   maxMeasuredTemp = oilTemp;
 }
@@ -46,8 +54,8 @@ void setup() {
 void loop() {
   // --- read sensors
 
-  int oilTemp = calcOilTemp(analogRead(A0));
-  int oilPressure = calcOilPressure(analogRead(A1));
+  int oilTemp = sensors.oilTemp();
+  int oilPressure = sensors.oilPressure();
 
   minMeasuredTemp = min(minMeasuredTemp, oilTemp);
   maxMeasuredTemp = max(maxMeasuredTemp, oilTemp);
@@ -81,7 +89,7 @@ void loop() {
   switch (displayMode) {
     case COMBINED:
       // renderCombinedDisplay(oilTemp, oilPressure);
-      renderCombinedDisplay2(oilTemp, oilPressure);
+      renderCombinedDisplay2(oilTemp, oilPressure, tempDetents, TEMP_DENTENTS_COUNT, psiDetents, PSI_DETENTS_COUNT);
       break;
     case OIL_TEMP:
       renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents, true, minMeasuredTemp, maxMeasuredTemp);

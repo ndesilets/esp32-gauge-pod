@@ -88,7 +88,8 @@ void renderCombinedDisplay(int oilTemp, int oilPressure) {
   display.display();
 }
 
-void renderCombinedDisplay2(int oilTemp, int oilPressure) {
+void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents, int numTempDetents,
+                            const int* psiDetents, int numPsiDetents) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
@@ -111,7 +112,7 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure) {
   display.print(sensorValueStr);
 
   // set oil temp gauge
-  drawHorizontalGauge(0, cy + 26, 3, tempDetents, -20, 300, oilTemp);
+  drawHorizontalGauge(0, cy + 26, numTempDetents, tempDetents, -20, 300, oilTemp);
 
   cy += 38;
 
@@ -129,7 +130,7 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure) {
   display.print(sensorValueStr);
 
   // set oil pressure gauge
-  drawHorizontalGauge(0, cy + 26, 4, psiDetents, 0, 100, oilPressure);
+  drawHorizontalGauge(0, cy + 26, numPsiDetents, psiDetents, 0, 100, oilPressure);
 
   display.display();
 }
