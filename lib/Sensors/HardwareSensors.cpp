@@ -123,15 +123,24 @@ class HardwareSensors : public ISensors {
  public:
   int oilTemp() override {
     int adc = analogRead(A0);
-    int R = 10000 * (((double)4095 / adc) - 1);
-    constexpr double CAL = 7.0;  // calibration offset
-    return (int)(interpolateTemperature(R) + CAL);
+    int R = 10000 * (((double)4095 / adc) - 1);  // 10k ohm
+    constexpr double CAL = 7.0;                  // offset compared to fancy thermometer
+
+    int unsmoothed = (int)(interpolateTemperature(R) + CAL);
+    smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
+    int final = smoothedTemp >> 8;  // shift back to 12 bit
+
+    return final;
   }
 
   int oilPressure() override {
     int adc = analogRead(A1);
     return (int)interpolatePressure(adc);
   }
+
+ private:
+  static constexpr int ALPHA_SHIFT = 1;
+  int smoothedTemp = 0;
 };
 
 // --- factory
