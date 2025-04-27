@@ -7,5 +7,7 @@
     "type_traits": "cpp",
     "cmath": "cpp",
     "new": "cpp"
-  }
+  },
+  "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
+  "editor.defaultFormatter": "ms-vscode.cpptools"
 }
