@@ -18,3 +18,6 @@ This has a three mode display that shows:
 - Oil temperature with moving averages and horizontal bar gauge
 - Oil pressure with moving averages and horizontal bar gauge 
 - Alerts for high oil temperature and low oil pressure
+
+## things learned
+FIXME: ESP32 built-in ADC is less than stellar
