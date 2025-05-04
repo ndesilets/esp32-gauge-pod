@@ -3,10 +3,10 @@
 #include "Sensors.h"
 #include "Utils.h"
 
-#define A_BTN_PIN 14
-#define B_BTN_PIN 32
-#define C_BTN_PIN 15
-#define INTERNAL_BTN_PIN 38
+#define A_BTN_PIN 8
+#define B_BTN_PIN 7
+#define C_BTN_PIN 6
+// #define INTERNAL_BTN_PIN 38
 
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE, DISPLAY_OFF };
 constexpr int DISPLAY_MODE_COUNT = 4;
@@ -38,11 +38,11 @@ void setup() {
   pinMode(A_BTN_PIN, INPUT_PULLUP);
   pinMode(B_BTN_PIN, INPUT_PULLUP);
   pinMode(C_BTN_PIN, INPUT_PULLUP);
-  pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
+  // pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
 
   // TODO: don't remember if i still need this or not but it works as is so im leaving it lmao
-  pinMode(A5, OUTPUT);
-  digitalWrite(A5, HIGH);
+  // pinMode(A5, OUTPUT);
+  // digitalWrite(A5, HIGH);
 
   initDisplay();
 

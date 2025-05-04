@@ -1,4 +1,8 @@
+#include <Adafruit_ADS1X15.h>
 #include <ISensors.h>
+#include <Wire.h>
+
+Adafruit_ADS1115 ads1115;
 
 // --- lookup tables
 
@@ -105,16 +109,9 @@ static double interpolateTemperature(int res) {
   return interpolated;
 }
 
-static double interpolatePressure(int adcValue) {
+static double interpolatePressure(double voltage) {
   // rife 100psi voltage/pressure scales linearly, so probably dont need the LUT
-
-  if (adcValue < 409) {
-    return 0;
-  } else if (adcValue > 3685) {
-    return 100;
-  }
-
-  return ((double)(adcValue - 409) / (3685 - 409)) * 100;
+  return (voltage - 0.5) * (100.0 / 4.0);
 }
 
 // --- concrete class
@@ -122,11 +119,13 @@ static double interpolatePressure(int adcValue) {
 class HardwareSensors : public ISensors {
  public:
   int oilTemp() override {
-    int adc = analogRead(A0);
-    int R = 10000 * (((double)4095 / adc) - 1);  // 10k ohm
-    constexpr double CAL = 7.0;                  // offset compared to fancy thermometer
+    int16_t adc = ads1115.readADC_SingleEnded(2);
+    // can only set range to +/-6.144v or +/-4.096v, so use 6.144v
+    // 15 bit effective resolution since its signed
+    double Rtemp = RB * adc * V_FSR / (32767.0 * V_SUP - adc * V_FSR);
+    constexpr double CAL = 0;  // TODO: figure out new offset
 
-    int unsmoothed = (int)(interpolateTemperature(R) + CAL);
+    int unsmoothed = (int)(interpolateTemperature(Rtemp) + CAL);
     smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
     int final = smoothedTemp >> 8;  // shift back to 12 bit
 
@@ -134,11 +133,16 @@ class HardwareSensors : public ISensors {
   }
 
   int oilPressure() override {
-    int adc = analogRead(A1);
-    return (int)interpolatePressure(adc);
+    int adc = ads1115.readADC_SingleEnded(3);
+    double voltage = adc * (V_FSR / 32767.0);
+
+    return (int)(interpolatePressure(voltage) + 0.5);  // round to nearest int
   }
 
  private:
+  static constexpr double RB = 3000.0;    // 3k ohm
+  static constexpr double V_SUP = 5.0;    // 5v supply
+  static constexpr double V_FSR = 6.144;  // 6.144v FSR
   static constexpr int ALPHA_SHIFT = 1;
   int smoothedTemp = 0;
 };
@@ -150,5 +154,6 @@ HardwareSensors hwInstance;
 }
 
 ISensors& getHardwareSensors() {
+  ads1115.begin();
   return hwInstance;
 }
