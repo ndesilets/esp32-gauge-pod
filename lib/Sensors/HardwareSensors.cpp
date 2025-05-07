@@ -122,7 +122,7 @@ class HardwareSensors : public ISensors {
     int16_t adc = ads1115.readADC_SingleEnded(2);
     // can only set range to +/-6.144v or +/-4.096v, so use 6.144v
     // 15 bit effective resolution since its signed
-    double Rtemp = RB * adc * V_FSR / (32767.0 * V_SUP - adc * V_FSR);
+    double Rtemp = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
     constexpr double CAL = 0;  // TODO: figure out new offset
 
     int unsmoothed = (int)(interpolateTemperature(Rtemp) + CAL);
