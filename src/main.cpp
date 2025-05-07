@@ -36,7 +36,7 @@ void setup() {
 #ifdef MOCK_SENSORS
   sensors = &getMockSensors();
 #else
-  sensors = &getHardwareSensors();
+  sensors = &getAnalogSensors();
 #endif
 
 #ifdef LONG_AS_FUCK_I2C
@@ -88,8 +88,8 @@ void loop() {
     maxMeasuredTemp = oilTemp;
   }
 
-  // C btn disabled for my jank i2c fix (short C btn to GND w/ 4.7k resistor)
-  // this fixes i2c over a 3' ethernet cable at the expense of one less button
+  // C button disabled for my jank i2c fix (short C button to GND w/ 4.7k resistor)
+  // this mostly fixes i2c over a 3' ethernet cable at the expense of one less button and maybe a small bit of dignity
 
   // if (!digitalRead(B_BTN_PIN)) {
   //   bButtonPressed = true;

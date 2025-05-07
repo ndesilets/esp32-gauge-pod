@@ -64,7 +64,7 @@ bool initDisplay() {
   delay(1000);  // splash
 
   display.clearDisplay();
-  display.setRotation(1);
+  display.setRotation(1);  // get rotated idiot
   display.setTextColor(SH110X_WHITE);
 
   return true;
@@ -144,8 +144,6 @@ void renderSingleDisplay(const char* header, int sensorReading, int minV, int ma
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
-  const int movingAvgsLineLength = 5 * 3 + 6;  // 3 vals + whitespace
-  char movingAvgsLine[movingAvgsLineLength] = {'\0'};
 
   display.clearDisplay();
 
