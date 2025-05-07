@@ -42,45 +42,11 @@ static const int rifeTempSensorRef[] = {
 };
 static constexpr int tempSensorRefLen = sizeof(rifeTempSensorRef) / sizeof(int);
 
-static const int rife100PsiSensorRef[] = {
-    409,   // 0.0 PSI,
-    514,   // 3.2 PSI,
-    620,   // 6.5 PSI,
-    725,   // 9.7 PSI,
-    832,   // 12.9 PSI,
-    938,   // 16.1 PSI,
-    1043,  // 19.4 PSI,
-    1149,  // 22.6 PSI,
-    1254,  // 25.8 PSI,
-    1360,  // 29.0 PSI,
-    1465,  // 32.3 PSI,
-    1572,  // 35.5 PSI,
-    1677,  // 38.7 PSI,
-    1783,  // 41.9 PSI,
-    1888,  // 45.2 PSI,
-    1994,  // 48.4 PSI,
-    2099,  // 51.6 PSI,
-    2205,  // 54.8 PSI,
-    2311,  // 58.1 PSI,
-    2417,  // 61.3 PSI,
-    2522,  // 64.5 PSI,
-    2628,  // 67.7 PSI,
-    2733,  // 71.0 PSI,
-    2839,  // 74.2 PSI,
-    2944,  // 77.4 PSI,
-    3050,  // 80.6 PSI,
-    3156,  // 83.9 PSI,
-    3262,  // 87.1 PSI,
-    3367,  // 90.3 PSI,
-    3473,  // 93.5 PSI,
-    3578,  // 96.8 PSI,
-    3685,  // 100.0 PSI
-};
-
 // --- helpers
 
 static double interpolateTemperature(int res) {
   // find closest resistance values
+  // TODO: could do binary search but only 30 elements so who cares
   int maxRIdx = 0;
   int minRIdx = 0;
   for (int i = 0; i < tempSensorRefLen; i++) {
@@ -100,32 +66,32 @@ static double interpolateTemperature(int res) {
   int maxRes = rifeTempSensorRef[maxRIdx];
   int minRes = rifeTempSensorRef[minRIdx];
 
+  // convert LUT indexes to known temps
   int hiTemp = -20.0 + (maxRIdx * 10);
   int loTemp = hiTemp + 10;
 
-  // R1 = cold, R2 = hot
   double interpolated = hiTemp + ((double)(res - maxRes) / (double)(minRes - maxRes)) * (loTemp - hiTemp);
 
   return interpolated;
 }
 
 static double interpolatePressure(double voltage) {
-  // rife 100psi voltage/pressure scales linearly, so probably dont need the LUT
+  // rife 100psi voltage/pressure scales linearly from 0.5-4.5v (0-100PSI), so dont need the LUT
   return (voltage - 0.5) * (100.0 / 4.0);
 }
 
 // --- concrete class
 
-class HardwareSensors : public ISensors {
+class AnalogSensors : public ISensors {
  public:
   int oilTemp() override {
     int16_t adc = ads1115.readADC_SingleEnded(2);
-    // can only set range to +/-6.144v or +/-4.096v, so use 6.144v
+    // can only set range to +/-6.144v or +/-4.096v, so use 6.144v since its 5v
     // 15 bit effective resolution since its signed
-    double Rtemp = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
-    constexpr double CAL = 0;  // TODO: figure out new offset
+    double resistance = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
+    constexpr double offset = 0;  // TODO: figure out new offset
 
-    int unsmoothed = (int)(interpolateTemperature(Rtemp) + CAL);
+    int unsmoothed = (int)(interpolateTemperature(resistance) + offset);
     smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
     int final = smoothedTemp >> 8;  // shift back to 12 bit
 
@@ -135,12 +101,13 @@ class HardwareSensors : public ISensors {
   int oilPressure() override {
     int adc = ads1115.readADC_SingleEnded(3);
     double voltage = adc * (V_FSR / 32767.0);
+    // TODO: could filter noise here but any excessive latency would be bad for fast drops
 
     return (int)(interpolatePressure(voltage) + 0.5);  // round to nearest int
   }
 
  private:
-  static constexpr double RB = 3000.0;    // 3k ohm
+  static constexpr double RB = 3000.0;    // 3k ohm bias resistor
   static constexpr double V_SUP = 5.0;    // 5v supply
   static constexpr double V_FSR = 6.144;  // 6.144v FSR
   static constexpr int ALPHA_SHIFT = 1;
@@ -150,10 +117,10 @@ class HardwareSensors : public ISensors {
 // --- factory
 
 namespace {
-HardwareSensors hwInstance;
+AnalogSensors hwInstance;
 }
 
-ISensors& getHardwareSensors() {
+ISensors& getAnalogSensors() {
   ads1115.begin();
   return hwInstance;
 }

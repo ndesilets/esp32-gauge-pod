@@ -6,7 +6,11 @@
     "utility": "cpp",
     "type_traits": "cpp",
     "cmath": "cpp",
-    "new": "cpp"
+    "new": "cpp",
+    "deque": "cpp",
+    "string": "cpp",
+    "unordered_map": "cpp",
+    "vector": "cpp"
   },
   "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
   "editor.defaultFormatter": "ms-vscode.cpptools"
