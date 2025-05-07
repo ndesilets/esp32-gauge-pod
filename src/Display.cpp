@@ -55,15 +55,19 @@ static void drawHorizontalGauge(int x, int y, int numDetents, const int* detents
 
 // --- public
 
-void initDisplay() {
+bool initDisplay() {
   delay(500);  // let OLED power-up
-  display.begin(SH1107_ADDR, true);
+  if (!display.begin(SH1107_ADDR, true)) {
+    return false;
+  }
   display.display();
   delay(1000);  // splash
 
   display.clearDisplay();
   display.setRotation(1);
   display.setTextColor(SH110X_WHITE);
+
+  return true;
 }
 
 void displayOff() {

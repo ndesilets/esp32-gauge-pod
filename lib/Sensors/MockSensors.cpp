@@ -50,8 +50,8 @@ class MockSensors : public ISensors {
 
   double step() {
     static double x = 0.0;
-    // x += 0.00075;  // speed of the wave
-    x += 0.00001;  // speed of the wave
+    x += 0.00075;  // speed of the wave
+    // x += 0.00001;  // speed of the wave
     return x;
   }
 

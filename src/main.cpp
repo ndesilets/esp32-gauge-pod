@@ -37,18 +37,19 @@ void setup() {
 
   Serial.println("Starting up...");
 
-  // pinMode(A_BTN_PIN, INPUT_PULLUP);
-  // pinMode(B_BTN_PIN, INPUT_PULLUP);
-  // pinMode(C_BTN_PIN, INPUT_PULLUP);
+#ifdef LONG_AS_FUCK_I2C
+  // this can help w/ ethernet cables longer than 1'
+  Wire.begin(SDA, SCL, 50000);
+#endif
+
+  pinMode(A_BTN_PIN, INPUT_PULLUP);
+  pinMode(B_BTN_PIN, INPUT_PULLUP);
+  pinMode(C_BTN_PIN, INPUT_PULLUP);
   // pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
 
-  // TODO: don't remember if i still need this or not but it works as is so im leaving it lmao
-  // pinMode(A5, OUTPUT);
-  // digitalWrite(A5, HIGH);
-
   Serial.println("Initializing display...");
-  initDisplay();
-  Serial.println("\tDisplay OK");
+  bool displayOK = initDisplay();
+  Serial.printf("\tDisplay: %s\n", displayOK ? "OK" : "absolutely cooked brother");
 
   int oilTemp = sensors.oilTemp();
   minMeasuredTemp = oilTemp;
@@ -77,22 +78,32 @@ void loop() {
     bButtonPressed = true;
   } else if (bButtonPressed) {
     bButtonPressed = false;
-    displayMode = DISPLAY_OFF;
-  }
-
-  if (!digitalRead(C_BTN_PIN)) {
-    cButtonPressed = true;
-  } else if (cButtonPressed) {
-    cButtonPressed = false;
     minMeasuredTemp = oilTemp;
     maxMeasuredTemp = oilTemp;
   }
+
+  // C btn disabled for my jank i2c fix (short C btn to GND w/ 4.7k resistor)
+  // this fixes i2c over a 3' ethernet cable at the expense of one less button
+
+  // if (!digitalRead(B_BTN_PIN)) {
+  //   bButtonPressed = true;
+  // } else if (bButtonPressed) {
+  //   bButtonPressed = false;
+  //   displayMode = DISPLAY_OFF;
+  // }
+
+  // if (!digitalRead(C_BTN_PIN)) {
+  //   cButtonPressed = true;
+  // } else if (cButtonPressed) {
+  //   cButtonPressed = false;
+  //   minMeasuredTemp = oilTemp;
+  //   maxMeasuredTemp = oilTemp;
+  // }
 
   // --- display handling
 
   switch (displayMode) {
     case COMBINED:
-      renderCombinedDisplay(oilTemp, oilPressure);
       renderCombinedDisplay2(oilTemp, oilPressure, tempDetents, TEMP_DENTENTS_COUNT, psiDetents, PSI_DETENTS_COUNT);
       break;
     case OIL_TEMP:

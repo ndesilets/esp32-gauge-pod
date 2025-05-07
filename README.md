@@ -20,4 +20,5 @@ This has a three mode display that shows:
 - Alerts for high oil temperature and low oil pressure
 
 ## things learned
-FIXME: ESP32 built-in ADC is less than stellar
+- FIXME: ESP32 built-in ADC is less than stellar
+- i2c does not seem to like longer runs of ethernet cables. 1' is fine, 3' works but is not exactly happy

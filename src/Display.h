@@ -3,7 +3,7 @@
 #include <Adafruit_SH110X.h>
 #include <Wire.h>
 
-void initDisplay();
+bool initDisplay();
 void renderCombinedDisplay(int oilTemp, int oilPressure);
 void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents, int numTempDetents,
                             const int* psiDetents, int numPsiDetents);
