@@ -26,16 +26,18 @@ bool aButtonPressed = false;
 bool bButtonPressed = false;
 bool cButtonPressed = false;
 
-#ifdef MOCK_SENSORS
-ISensors& sensors = getMockSensors();
-#else
-ISensors& sensors = getHardwareSensors();
-#endif
+ISensors* sensors = nullptr;
 
 void setup() {
   Serial.begin(115200);
 
   Serial.println("Starting up...");
+
+#ifdef MOCK_SENSORS
+  sensors = &getMockSensors();
+#else
+  sensors = &getHardwareSensors();
+#endif
 
 #ifdef LONG_AS_FUCK_I2C
   // this can help w/ ethernet cables longer than 1'
@@ -44,23 +46,27 @@ void setup() {
 
   pinMode(A_BTN_PIN, INPUT_PULLUP);
   pinMode(B_BTN_PIN, INPUT_PULLUP);
-  pinMode(C_BTN_PIN, INPUT_PULLUP);
+  // pinMode(C_BTN_PIN, INPUT_PULLUP);
   // pinMode(INTERNAL_BTN_PIN, INPUT_PULLUP);
 
   Serial.println("Initializing display...");
   bool displayOK = initDisplay();
   Serial.printf("\tDisplay: %s\n", displayOK ? "OK" : "absolutely cooked brother");
 
-  int oilTemp = sensors.oilTemp();
+  Serial.println("Initializing oil temp.");
+
+  int oilTemp = sensors->oilTemp();
   minMeasuredTemp = oilTemp;
   maxMeasuredTemp = oilTemp;
+
+  Serial.println("Start up complete.");
 }
 
 void loop() {
   // --- read sensors
 
-  int oilTemp = sensors.oilTemp();
-  int oilPressure = sensors.oilPressure();
+  int oilTemp = sensors->oilTemp();
+  int oilPressure = sensors->oilPressure();
 
   minMeasuredTemp = min(minMeasuredTemp, oilTemp);
   maxMeasuredTemp = max(maxMeasuredTemp, oilTemp);
