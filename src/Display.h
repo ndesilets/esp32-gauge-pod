@@ -9,4 +9,5 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents
                             const int* psiDetents, int numPsiDetents);
 void renderSingleDisplay(const char* header, int sensorReading, int minV, int maxV, int numDetents, const int* detents,
                          bool showMinMax, int minMeasured, int maxMeasured);
+void flashDisplay();
 void displayOff();

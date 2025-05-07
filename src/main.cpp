@@ -8,23 +8,32 @@
 #define C_BTN_PIN 27
 // #define INTERNAL_BTN_PIN 38
 
+#define OIL_TEMP_WARN 250     // if above 250F
+#define OIL_PRESSURE_WARN 15  // if below 15psi
+
+// display mode
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE, DISPLAY_OFF };
 constexpr int DISPLAY_MODE_COUNT = 4;
-
 DisplayMode displayMode = OIL_TEMP;
 
-int minMeasuredTemp = 0;
-int maxMeasuredTemp = 0;
-
+// gauge detents
 const int tempDetents[3] = {0, 180, 250};
 constexpr int TEMP_DENTENTS_COUNT = sizeof(tempDetents) / sizeof(int);
 const int psiDetents[4] = {20, 40, 60, 80};
 constexpr int PSI_DETENTS_COUNT = sizeof(psiDetents) / sizeof(int);
 
+// button state
 bool intButtonPressed = false;
 bool aButtonPressed = false;
 bool bButtonPressed = false;
 bool cButtonPressed = false;
+
+// monitoring state
+int minMeasuredTemp = 0;
+int maxMeasuredTemp = 0;
+bool engineHasStarted = false;
+bool uhOhStinky = false;
+unsigned long nextFlash = 0;  // for flashing display on temp/pressure warning
 
 ISensors* sensors = nullptr;
 
@@ -71,6 +80,17 @@ void loop() {
   minMeasuredTemp = min(minMeasuredTemp, oilTemp);
   maxMeasuredTemp = max(maxMeasuredTemp, oilTemp);
 
+  // --- monitoring logic
+
+  // good enough until we can use canbus one day
+  if (!engineHasStarted && oilPressure >= OIL_PRESSURE_WARN) {
+    engineHasStarted = true;
+  }
+
+  if (engineHasStarted) {
+    uhOhStinky = (oilTemp >= OIL_TEMP_WARN) || (oilPressure < OIL_PRESSURE_WARN);
+  }
+
   // --- button handling
 
   if (!digitalRead(A_BTN_PIN)) {
@@ -108,21 +128,25 @@ void loop() {
 
   // --- display handling
 
-  switch (displayMode) {
-    case COMBINED:
-      renderCombinedDisplay2(oilTemp, oilPressure, tempDetents, TEMP_DENTENTS_COUNT, psiDetents, PSI_DETENTS_COUNT);
-      break;
-    case OIL_TEMP:
-      renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents, true, minMeasuredTemp, maxMeasuredTemp);
-      break;
-    case OIL_PRESSURE:
-      renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents, false, 0, 0);
-      break;
-    case DISPLAY_OFF:
-      displayOff();
-      break;
-    default:
-      Serial.println("oh my god bruh aww hell nah man what the FUCK man");
+  if (uhOhStinky && (millis() / 333 % 2 == 0)) {
+    flashDisplay();
+  } else {
+    switch (displayMode) {
+      case COMBINED:
+        renderCombinedDisplay2(oilTemp, oilPressure, tempDetents, TEMP_DENTENTS_COUNT, psiDetents, PSI_DETENTS_COUNT);
+        break;
+      case OIL_TEMP:
+        renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents, true, minMeasuredTemp, maxMeasuredTemp);
+        break;
+      case OIL_PRESSURE:
+        renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents, false, 0, 0);
+        break;
+      case DISPLAY_OFF:
+        displayOff();
+        break;
+      default:
+        Serial.println("oh my god bruh aww hell nah man what the FUCK man");
+    }
   }
 
   delay(66);  // ~15 Hz refresh

@@ -185,3 +185,8 @@ void renderSingleDisplay(const char* header, int sensorReading, int minV, int ma
 
   display.display();
 }
+
+void flashDisplay() {
+  display.fillScreen(SH110X_WHITE);
+  display.display();
+}
