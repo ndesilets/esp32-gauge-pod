@@ -33,7 +33,6 @@ int minMeasuredTemp = 0;
 int maxMeasuredTemp = 0;
 bool engineHasStarted = false;
 bool uhOhStinky = false;
-unsigned long nextFlash = 0;  // for flashing display on temp/pressure warning
 
 ISensors* sensors = nullptr;
 
@@ -129,6 +128,7 @@ void loop() {
   // --- display handling
 
   if (uhOhStinky && (millis() / 333 % 2 == 0)) {
+    displayMode = COMBINED;  // force combined to show all metrics
     flashDisplay();
   } else {
     switch (displayMode) {

@@ -89,7 +89,7 @@ class AnalogSensors : public ISensors {
     // can only set range to +/-6.144v or +/-4.096v, so use 6.144v since its 5v
     // 15 bit effective resolution since its signed
     double resistance = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
-    constexpr double offset = 0;  // TODO: figure out new offset
+    constexpr double offset = 3;  // TODO: figure out actual offset, but this seems close?
 
     int unsmoothed = (int)(interpolateTemperature(resistance) + offset);
     smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
