@@ -77,6 +77,12 @@ static double interpolateTemperature(int res) {
 
 static double interpolatePressure(double voltage) {
   // rife 100psi voltage/pressure scales linearly from 0.5-4.5v (0-100PSI), so dont need the LUT
+  if (voltage < 0.5) {
+    return 0.0;
+  } else if (voltage > 4.5) {
+    return 100.0;
+  }
+
   return (voltage - 0.5) * (100.0 / 4.0);
 }
 
