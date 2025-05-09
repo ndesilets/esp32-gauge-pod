@@ -88,6 +88,8 @@ void loop() {
 
   if (engineHasStarted) {
     uhOhStinky = (oilTemp >= OIL_TEMP_WARN) || (oilPressure < OIL_PRESSURE_WARN);
+    if (uhOhStinky)
+      displayMode = COMBINED;  // force combined to show all metrics
   }
 
   // --- button handling
@@ -128,7 +130,6 @@ void loop() {
   // --- display handling
 
   if (uhOhStinky && (millis() / 333 % 2 == 0)) {
-    displayMode = COMBINED;  // force combined to show all metrics
     flashDisplay();
   } else {
     switch (displayMode) {
