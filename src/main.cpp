@@ -8,6 +8,11 @@
 #define C_BTN_PIN 27
 // #define INTERNAL_BTN_PIN 38
 
+#define MIN_TEMP_VAL -20
+#define MAX_TEMP_VAL 300
+#define MIN_PSI_VAL 0
+#define MAX_PSI_VAL 100
+
 #define OIL_TEMP_WARN 250     // if above 250F
 #define OIL_PRESSURE_WARN 15  // if below 15psi
 
@@ -22,6 +27,10 @@ constexpr int TEMP_DENTENTS_COUNT = sizeof(tempDetents) / sizeof(int);
 const int psiDetents[4] = {20, 40, 60, 80};
 constexpr int PSI_DETENTS_COUNT = sizeof(psiDetents) / sizeof(int);
 
+// gauge configs
+const BarGaugeConfig oilTempConfig = {"OIL TEMP", tempDetents, TEMP_DENTENTS_COUNT, MIN_TEMP_VAL, MAX_TEMP_VAL, true};
+const BarGaugeConfig oilPressureConfig = {"OIL PSI", psiDetents, PSI_DETENTS_COUNT, MIN_PSI_VAL, MAX_PSI_VAL, true};
+
 // button state
 bool intButtonPressed = false;
 bool aButtonPressed = false;
@@ -31,6 +40,8 @@ bool cButtonPressed = false;
 // monitoring state
 int minMeasuredTemp = 0;
 int maxMeasuredTemp = 0;
+int minMeasuredPressure = 0;
+int maxMeasuredPressure = 0;
 bool engineHasStarted = false;
 bool uhOhStinky = false;
 
@@ -76,8 +87,9 @@ void loop() {
   int oilTemp = sensors->oilTemp();
   int oilPressure = sensors->oilPressure();
 
-  minMeasuredTemp = min(minMeasuredTemp, oilTemp);
-  maxMeasuredTemp = max(maxMeasuredTemp, oilTemp);
+  SensorState oilTempState = {oilTemp, min(minMeasuredTemp, oilTemp), max(maxMeasuredTemp, oilTemp)};
+  SensorState oilPressureState = {oilPressure, min(minMeasuredPressure, oilPressure),
+                                  max(maxMeasuredPressure, oilPressure)};
 
   // --- monitoring logic
 
@@ -87,7 +99,7 @@ void loop() {
   }
 
   if (engineHasStarted) {
-    uhOhStinky = (oilTemp >= OIL_TEMP_WARN) || (oilPressure < OIL_PRESSURE_WARN);
+    uhOhStinky = (oilTempState.current >= OIL_TEMP_WARN) || (oilPressureState.current < OIL_PRESSURE_WARN);
     if (uhOhStinky)
       displayMode = COMBINED;  // force combined to show all metrics
   }
@@ -134,13 +146,13 @@ void loop() {
   } else {
     switch (displayMode) {
       case COMBINED:
-        renderCombinedDisplay2(oilTemp, oilPressure, tempDetents, TEMP_DENTENTS_COUNT, psiDetents, PSI_DETENTS_COUNT);
+        renderCombinedDisplay2(oilTempState, oilTempConfig, oilPressureState, oilPressureConfig);
         break;
       case OIL_TEMP:
-        renderSingleDisplay("OIL TEMP", oilTemp, -20, 300, 3, tempDetents, true, minMeasuredTemp, maxMeasuredTemp);
+        renderSingleDisplay(oilTempState, oilTempConfig);
         break;
       case OIL_PRESSURE:
-        renderSingleDisplay("OIL PSI", oilPressure, 0, 100, 4, psiDetents, false, 0, 0);
+        renderSingleDisplay(oilPressureState, oilPressureConfig);
         break;
       case DISPLAY_OFF:
         displayOff();

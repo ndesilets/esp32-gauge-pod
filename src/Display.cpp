@@ -37,8 +37,7 @@ static void renderColumn(int offset, const char* header1, const char* header2, i
   display.print(sensorValueStr);
 }
 
-static void drawHorizontalGauge(int x, int y, int numDetents, const int* detents, int minV, int maxV,
-                                int sensorReading) {
+static void drawBarGauge(int x, int y, int numDetents, const int* detents, int minV, int maxV, int sensorReading) {
   // bounding box
   display.drawRect(x, y - 11, DISPLAY_WIDTH, 10, SH110X_WHITE);
 
@@ -75,39 +74,37 @@ void displayOff() {
   display.display();
 }
 
-void renderCombinedDisplay(int oilTemp, int oilPressure) {
-  int16_t cx, cy, x1, y1;
-  uint16_t w, h;
-  const char* oilHeader = "OIL";
-  const char* tempHeader = "TEMP";
-  const char* psiHeader = "PSI";
+// void renderCombinedDisplay(int oilTemp, int oilPressure) {
+//   int16_t cx, cy, x1, y1;
+//   uint16_t w, h;
+//   const char* oilHeader = "OIL";
+//   const char* tempHeader = "TEMP";
+//   const char* psiHeader = "PSI";
 
-  display.clearDisplay();
-  display.setCursor(0, 0);
+//   display.clearDisplay();
+//   display.setCursor(0, 0);
 
-  display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
-  renderColumn(0, oilHeader, tempHeader, oilTemp);
-  renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
+//   display.drawFastVLine(DISPLAY_WIDTH / 2, 0, DISPLAY_HEIGHT, SH110X_WHITE);
+//   renderColumn(0, oilHeader, tempHeader, oilTemp);
+//   renderColumn(DISPLAY_WIDTH / 2 + 2, oilHeader, psiHeader, oilPressure);
 
-  display.display();
-}
+//   display.display();
+// }
 
-void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents, int numTempDetents,
-                            const int* psiDetents, int numPsiDetents) {
+void renderCombinedDisplay2(SensorState oilTemp, BarGaugeConfig oilTempConfig, SensorState oilPressure,
+                            BarGaugeConfig oilPressureConfig) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
-  const char* tempHeader = "OIL TEMP";
-  const char* psiHeader = "OIL PRESSURE";
 
   display.clearDisplay();
   display.setCursor(0, 0);
 
   // set oil temp header
   display.setTextSize(1);
-  display.getTextBounds(tempHeader, cx, cy, &x1, &y1, &w, &h);
+  display.getTextBounds(oilTempConfig.header, cx, cy, &x1, &y1, &w, &h);
   display.setCursor(0, cy);
-  display.print(tempHeader);
+  display.print(oilTempConfig.header);
 
   // set oil temp value
   std::snprintf(sensorValueStr, 5, "%d", oilTemp);
@@ -116,15 +113,16 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents
   display.print(sensorValueStr);
 
   // set oil temp gauge
-  drawHorizontalGauge(0, cy + 26, numTempDetents, tempDetents, -20, 300, oilTemp);
+  drawBarGauge(0, cy + 26, oilTempConfig.detentsCount, oilTempConfig.detents, oilTempConfig.minVal,
+               oilTempConfig.maxVal, oilTemp.current);
 
   cy += 38;
 
   // set oil pressure header
   display.setTextSize(1);
-  display.getTextBounds(psiHeader, cx, cy, &x1, &y1, &w, &h);
+  display.getTextBounds(oilPressureConfig.header, cx, cy, &x1, &y1, &w, &h);
   display.setCursor(0, cy);
-  display.print(psiHeader);
+  display.print(oilPressureConfig.header);
 
   // set oil pressure value
   memset(sensorValueStr, '\0', 5);
@@ -134,13 +132,13 @@ void renderCombinedDisplay2(int oilTemp, int oilPressure, const int* tempDetents
   display.print(sensorValueStr);
 
   // set oil pressure gauge
-  drawHorizontalGauge(0, cy + 26, numPsiDetents, psiDetents, 0, 100, oilPressure);
+  drawBarGauge(0, cy + 26, oilPressureConfig.detentsCount, oilPressureConfig.detents, oilPressureConfig.minVal,
+               oilPressureConfig.maxVal, oilPressure.current);
 
   display.display();
 }
 
-void renderSingleDisplay(const char* header, int sensorReading, int minV, int maxV, int numDetents, const int* detents,
-                         bool showMinMax, int minMeasured, int maxMeasured) {
+void renderSingleDisplay(SensorState sensor, BarGaugeConfig config) {
   int16_t cx, cy, x1, y1;
   uint16_t w, h;
   char sensorValueStr[5] = {'\0'};
@@ -149,39 +147,39 @@ void renderSingleDisplay(const char* header, int sensorReading, int minV, int ma
 
   // header
   display.setTextSize(1);
-  display.getTextBounds(header, cx, cy, &x1, &y1, &w, &h);
+  display.getTextBounds(config.header, cx, cy, &x1, &y1, &w, &h);
   display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
-  display.print(header);
+  display.print(config.header);
   cy += h + 10;
 
   // current sensor value
   display.setTextSize(3);
-  std::snprintf(sensorValueStr, 5, "%d", sensorReading);
+  std::snprintf(sensorValueStr, 5, "%d", sensor.current);
 
   display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
   display.setCursor((DISPLAY_WIDTH - w) / 2, cy);
   display.print(sensorValueStr);
 
   // min/max values
-  if (showMinMax) {
+  if (config.showSessionMinMax) {
     display.setTextSize(1);
 
     // min
     memset(&sensorValueStr, '\0', 5);
-    std::snprintf(sensorValueStr, 5, "%d", minMeasured);
+    std::snprintf(sensorValueStr, 5, "%d", sensor.min);
     display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
     display.setCursor(0, cy + h);
     display.print(sensorValueStr);
 
     // max
     memset(&sensorValueStr, '\0', 5);
-    std::snprintf(sensorValueStr, 5, "%d", maxMeasured);
+    std::snprintf(sensorValueStr, 5, "%d", sensor.max);
     display.getTextBounds(sensorValueStr, cx, cy, &x1, &y1, &w, &h);
     display.setCursor(DISPLAY_WIDTH - w, cy + h);
     display.print(sensorValueStr);
   }
 
-  drawHorizontalGauge(0, DISPLAY_HEIGHT, numDetents, detents, minV, maxV, sensorReading);
+  drawBarGauge(0, DISPLAY_HEIGHT, config.detentsCount, config.detents, config.minVal, config.maxVal, sensor.current);
 
   display.display();
 }

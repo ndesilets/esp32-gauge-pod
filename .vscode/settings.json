@@ -10,7 +10,9 @@
     "deque": "cpp",
     "string": "cpp",
     "unordered_map": "cpp",
-    "vector": "cpp"
+    "vector": "cpp",
+    "random": "cpp",
+    "limits": "cpp"
   },
   "C_Cpp.vcFormat.newLine.beforeOpenBrace.function": "sameLine",
   "editor.defaultFormatter": "ms-vscode.cpptools"
