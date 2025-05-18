@@ -19,7 +19,7 @@
 // display mode
 enum DisplayMode { COMBINED, OIL_TEMP, OIL_PRESSURE, DISPLAY_OFF };
 constexpr int DISPLAY_MODE_COUNT = 4;
-DisplayMode displayMode = OIL_TEMP;
+DisplayMode displayMode = COMBINED;
 
 // gauge detents
 const int tempDetents[3] = {0, 180, 250};
