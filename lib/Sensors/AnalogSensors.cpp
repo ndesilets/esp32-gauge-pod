@@ -68,7 +68,7 @@ static double interpolateTemperature(int res) {
 
   // convert LUT indexes to known temps
   int hiTemp = -20.0 + (maxRIdx * 10);
-  int loTemp = hiTemp + 10;
+  int loTemp = hiTemp - 10;
 
   double interpolated = hiTemp + ((double)(res - maxRes) / (double)(minRes - maxRes)) * (loTemp - hiTemp);
 
@@ -86,15 +86,20 @@ static double interpolatePressure(double voltage) {
   return (voltage - 0.5) * (100.0 / 4.0);
 }
 
+double calculateResistance(double Vout) {
+  // R1 = thermistor, R2 = bias resistor
+  // R1 = ((VDD * R2) / Vout) - R2
+  return ((5.0 * 3000) / Vout) - 3000;
+}
+
 // --- concrete class
 
 class AnalogSensors : public ISensors {
  public:
   int oilTemp() override {
     int16_t adc = ads1115.readADC_SingleEnded(2);
-    // can only set range to +/-6.144v or +/-4.096v, so use 6.144v since its 5v
-    // 15 bit effective resolution since its signed
-    double resistance = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
+    double voltage = adc * (V_FSR / 32767.0);
+    double resistance = calculateResistance(voltage);
     constexpr double offset = 3;  // TODO: figure out actual offset, but this seems close?
 
     int unsmoothed = (int)(interpolateTemperature(resistance) + offset);
