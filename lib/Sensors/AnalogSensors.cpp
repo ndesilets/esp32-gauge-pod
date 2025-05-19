@@ -44,11 +44,11 @@ static constexpr int tempSensorRefLen = sizeof(rifeTempSensorRef) / sizeof(int);
 
 // --- helpers
 
-static double interpolateTemperature(int res) {
+static double interpolateTemperature(double res) {
   // find closest resistance values
   // TODO: could do binary search but only 30 elements so who cares
-  int maxRIdx = 0;
-  int minRIdx = 0;
+  int hiResIdx = 0;
+  int loResIdx = 0;
   for (int i = 0; i < tempSensorRefLen; i++) {
     if (res > rifeTempSensorRef[i]) {
       if (i == 0) {
@@ -57,20 +57,20 @@ static double interpolateTemperature(int res) {
         return 290.0f;
       }
 
-      maxRIdx = i - 1;
-      minRIdx = i;
+      hiResIdx = i;
+      loResIdx = i - 1;
       break;
     }
   }
 
-  int maxRes = rifeTempSensorRef[maxRIdx];
-  int minRes = rifeTempSensorRef[minRIdx];
+  int hiRes = rifeTempSensorRef[hiResIdx];
+  int loRes = rifeTempSensorRef[loResIdx];
 
   // convert LUT indexes to known temps
-  int hiTemp = -20.0 + (maxRIdx * 10);
+  int hiTemp = -20.0 + (hiResIdx * 10);
   int loTemp = hiTemp - 10;
 
-  double interpolated = hiTemp + ((double)(res - maxRes) / (double)(minRes - maxRes)) * (loTemp - hiTemp);
+  double interpolated = hiTemp + ((double)(res - hiRes) / (double)(loRes - hiRes)) * (loTemp - hiTemp);
 
   return interpolated;
 }
