@@ -68,7 +68,7 @@ static double interpolateTemperature(int res) {
 
   // convert LUT indexes to known temps
   int hiTemp = -20.0 + (maxRIdx * 10);
-  int loTemp = hiTemp + 10;
+  int loTemp = hiTemp - 10;
 
   double interpolated = hiTemp + ((double)(res - maxRes) / (double)(minRes - maxRes)) * (loTemp - hiTemp);
 
@@ -86,16 +86,21 @@ static double interpolatePressure(double voltage) {
   return (voltage - 0.5) * (100.0 / 4.0);
 }
 
+double calculateResistance(double Vout, double VDD, double bias) {
+  // R1 = thermistor, R2 = bias resistor
+  // R1 = ((VDD * R2) / Vout) - R2
+  return ((VDD * bias) / Vout) - bias;
+}
+
 // --- concrete class
 
 class AnalogSensors : public ISensors {
  public:
   int oilTemp() override {
     int16_t adc = ads1115.readADC_SingleEnded(2);
-    // can only set range to +/-6.144v or +/-4.096v, so use 6.144v since its 5v
-    // 15 bit effective resolution since its signed
-    double resistance = RB * (32767.0 * V_SUP - adc * V_FSR) / (adc * V_FSR);
-    constexpr double offset = 3;  // TODO: figure out actual offset, but this seems close?
+    double voltage = adc * (V_FSR / 32767.0);
+    double resistance = calculateResistance(voltage, V_SUP, RB);
+    constexpr double offset = 2;  // 259F measured vs 261F expected
 
     int unsmoothed = (int)(interpolateTemperature(resistance) + offset);
     smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
@@ -107,14 +112,13 @@ class AnalogSensors : public ISensors {
   int oilPressure() override {
     int adc = ads1115.readADC_SingleEnded(3);
     double voltage = adc * (V_FSR / 32767.0);
-    // TODO: could filter noise here but any excessive latency would be bad for fast drops
 
     return (int)(interpolatePressure(voltage) + 0.5);  // round to nearest int
   }
 
  private:
   static constexpr double RB = 3000.0;    // 3k ohm bias resistor
-  static constexpr double V_SUP = 5.0;    // 5v supply
+  static constexpr double V_SUP = 4.96;   // 5v supply
   static constexpr double V_FSR = 6.144;  // 6.144v FSR
   static constexpr int ALPHA_SHIFT = 1;
   int smoothedTemp = 0;
