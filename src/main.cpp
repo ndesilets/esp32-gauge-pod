@@ -87,9 +87,13 @@ void loop() {
   int oilTemp = sensors->oilTemp();
   int oilPressure = sensors->oilPressure();
 
-  SensorState oilTempState = {oilTemp, min(minMeasuredTemp, oilTemp), max(maxMeasuredTemp, oilTemp)};
-  SensorState oilPressureState = {oilPressure, min(minMeasuredPressure, oilPressure),
-                                  max(maxMeasuredPressure, oilPressure)};
+  minMeasuredTemp = min(minMeasuredTemp, oilTemp);
+  maxMeasuredTemp = max(maxMeasuredTemp, oilTemp);
+  minMeasuredPressure = min(minMeasuredPressure, oilPressure);
+  maxMeasuredPressure = max(maxMeasuredPressure, oilPressure);
+
+  SensorState oilTempState = {oilTemp, minMeasuredTemp, maxMeasuredTemp};
+  SensorState oilPressureState = {oilPressure, minMeasuredPressure, maxMeasuredPressure};
 
   // --- monitoring logic
 
