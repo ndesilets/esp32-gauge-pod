@@ -63,12 +63,12 @@ static double interpolateTemperature(double res) {
     }
   }
 
-  int hiRes = rifeTempSensorRef[hiResIdx];
-  int loRes = rifeTempSensorRef[loResIdx];
-
   // convert LUT indexes to known temps
   int hiTemp = -20.0 + (hiResIdx * 10);
   int loTemp = hiTemp - 10;
+
+  int hiRes = rifeTempSensorRef[hiResIdx];
+  int loRes = rifeTempSensorRef[loResIdx];
 
   double interpolated = hiTemp + ((double)(res - hiRes) / (double)(loRes - hiRes)) * (loTemp - hiTemp);
 
@@ -100,7 +100,8 @@ class AnalogSensors : public ISensors {
     int16_t adc = ads1115.readADC_SingleEnded(2);
     double voltage = adc * (V_FSR / 32767.0);
     double resistance = calculateResistance(voltage, V_SUP, RB);
-    constexpr double offset = 2;  // 259F measured vs 261F expected
+    // constexpr double offset = 2;  // 259F measured vs 261F expected - but via self-heating it will eventually make up for this (~15m)
+    constexpr double offset = 0;
 
     int unsmoothed = (int)(interpolateTemperature(resistance) + offset);
     smoothedTemp += ((unsmoothed << 8) - smoothedTemp) >> ALPHA_SHIFT;
