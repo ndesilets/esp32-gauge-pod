@@ -110,6 +110,7 @@ void loop() {
 
   // --- button handling
 
+  // switch display mode
   if (!digitalRead(A_BTN_PIN)) {
     aButtonPressed = true;
   } else if (aButtonPressed) {
@@ -117,12 +118,15 @@ void loop() {
     displayMode = static_cast<DisplayMode>(theOneTrueModulo(displayMode + 1, DISPLAY_MODE_COUNT));
   }
 
+  // reset min/maxes
   if (!digitalRead(B_BTN_PIN)) {
     bButtonPressed = true;
   } else if (bButtonPressed) {
     bButtonPressed = false;
     minMeasuredTemp = oilTemp;
     maxMeasuredTemp = oilTemp;
+    minMeasuredPressure = oilPressure;
+    maxMeasuredPressure = oilPressure;
   }
 
   // C button disabled for my jank i2c fix (short C button to GND w/ 4.7k resistor)
